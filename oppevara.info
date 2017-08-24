@@ -1,0 +1,7 @@
+name = Digiõppevaramu
+description = A collection of modules that compose the Digiõppevaramu solution.
+package = Oppevara
+core = 7.x
+
+dependencies[] = h5p
+dependencies[] = h5peditor
