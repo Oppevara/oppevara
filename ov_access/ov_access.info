@@ -1,0 +1,7 @@
+name = Digiõppevara Access
+description = Provides additional access and permission overrides.
+package = Oppevara
+core = 7.x
+configure = admin/config/system/oppevara/access
+
+dependencies[] = oppevara

@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara Access mdule.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function ov_access_menu() {
+  $items = [];
+  $items['admin/config/system/oppevara/access'] = [
+    'title' => 'Oppevara Access',
+    'description' => 'Configure values for access override.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['ov_access_admin_settings'],
+    'access arguments' => ['administer site configuration'],
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'ov_access.admin.inc',
+  ];
+
+  return $items;
+}
+
+/**
+ * Implements hook_node_access().
+ */
+function ov_access_node_access($node, $op, $account) {
+  $expert_role = variable_get('ov_access_expert_role', null);
+  $h5p_topic_field = variable_get('ov_access_h5p_topic_field', null);
+  $account_subject_field = variable_get('ov_access_account_subject_field', null);
+
+  if (!($expert_role && $h5p_topic_field && $account_subject_field)) {
+    //watchdog('ov_access', 'One of the required variables for expert access override is missing', null, WATCHDOG_WARNING);
+    return NODE_ACCESS_IGNORE;
+  }
+
+  if (is_object($node) && $node->type === 'h5p_content' && $op === 'update' && user_has_role($expert_role, $account)) {
+    $node_topic = isset($node->{$h5p_topic_field}[LANGUAGE_NONE][0]) ? $node->{$h5p_topic_field}[LANGUAGE_NONE][0]['tid'] : null;
+    if (!$node_topic) {
+      //watchdog('ov_access', 'Node is missing the defined topic field or its value', null, WATCHDOG_WARNING);
+      return NODE_ACCESS_IGNORE;
+    }
+
+    $user = user_load($account->uid);
+    $account_subjects = isset($user->{$account_subject_field}[LANGUAGE_NONE]) ? $user->{$account_subject_field}[LANGUAGE_NONE] : [];
+    if (!$account_subjects) {
+      //watchdog('ov_access', 'User profile is missing the defined subject field or its value', null, WATCHDOG_WARNING);
+      return NODE_ACCESS_IGNORE;
+    }
+
+    $account_subjects = array_map(function($element) {
+      return $element['tid'];
+    }, $account_subjects);
+
+    if (in_array($node_topic, $account_subjects)) {
+      return NODE_ACCESS_ALLOW;
+    } else {
+      $parents = array_map(function($parent) {
+        return $parent->tid;
+      }, taxonomy_get_parents_all($node_topic));
+
+      if (array_intersect($parents, $account_subjects)) {
+        return NODE_ACCESS_ALLOW;
+      }
+    }
+  }
+
+  return NODE_ACCESS_IGNORE;
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function ov_access_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id === 'user_profile_form') {
+    $account_subject_field = variable_get('ov_access_account_subject_field', null);
+    if ($account_subject_field && isset($form[$account_subject_field])) {
+      if (!user_access('administer site configuration')) {
+        $form[$account_subject_field]['#access'] = FALSE;
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_user_view_alter().
+ */
+function ov_access_user_view_alter(&$build) {
+  $account_subject_field = variable_get('ov_access_account_subject_field', null);
+  if ($account_subject_field && isset($build[$account_subject_field])) {
+    if (!user_access('administer site configuration')) {
+      $build[$account_subject_field]['#access'] = FALSE;
+    }
+  }
+}
