@@ -1,6 +1,7 @@
 <?php
 
 /**
+ * @file
  * Drupal oppevara main module.
  */
 
@@ -9,10 +10,10 @@
  */
 
 function oppevara_h5p_styles_alter(&$styles, $libraries, $mode) {
-    $styles[] = (object) array(
-        // Path relative to drupal root
-        'path' => drupal_get_path('module', 'oppevara') . '/css/ov_h5p_style_overrides.css',
-        // Cache buster
-        'version' => '?ver=1',
-    );
+  $styles[] = (object) array(
+    // Path relative to drupal root
+    'path' => drupal_get_path('module', 'oppevara') . '/css/ov_h5p_style_overrides.css',
+    // Cache buster
+    'version' => '?ver=1',
+  );
 }
