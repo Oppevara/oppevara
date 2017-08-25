@@ -5,3 +5,5 @@ core = 7.x
 
 dependencies[] = h5p
 dependencies[] = h5peditor
+
+stylesheets[all][] = /css/ov_h5p_style_overrides.css
