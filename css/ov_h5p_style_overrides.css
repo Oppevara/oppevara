@@ -13,3 +13,6 @@ h4 {
     color: #006400;
 }
 
+.h5p-drag-droppable-words div {
+  display: inline;
+}
