@@ -1,10 +1,5 @@
-.node h2.title{ /* Main post title for theme */
-    color: #006400;
-    font-family: Sans-Serif;
-}
-
 /* General overrides for H5P */
-h3 {
+h3, h2 {
     color: #006400;
 }
 

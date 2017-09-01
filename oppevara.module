@@ -9,11 +9,34 @@
  *  Include h5p_style_overrides.css to H5P content
  */
 
+// Front-end override
 function oppevara_h5p_styles_alter(&$styles, $libraries, $mode) {
   $styles[] = (object) array(
     // Path relative to drupal root
-    'path' => drupal_get_path('module', 'oppevara') . '/css/ov_h5p_style_overrides.css',
+    'path' => drupal_get_path('module', 'oppevara') . '/css/ov_h5p_overrides.css',
     // Cache buster
     'version' => '?ver=2',
   );
+}
+
+// CKEditor overrides
+function oppevara_form_h5p_content_node_form_alter(&$form, &$form_state) {
+  $form['#after_build'][] = 'oppevara_h5p_content_node_form_process';
+}
+
+function oppevara_h5p_content_node_form_process($form, &$form_state) {
+  $settings = array(
+    'h5peditor' => array(
+      'assets' => array(
+        'js' => array(
+          base_path() . drupal_get_path('module', 'oppevara') . '/ov_ck_config.js'
+        )/*,
+        'css' => array(
+          base_path() . drupal_get_path('module', 'oppevara') . '/css/ov_h5p_overrides.css'
+        )*/
+      )
+    )
+  );
+  drupal_add_js($settings, 'setting');
+  return $form;
 }

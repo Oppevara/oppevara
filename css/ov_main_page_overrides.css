@@ -1,0 +1,5 @@
+/* Main post title for theme */
+.node h2.title a{
+    color: #006400;
+    font-family: sans-serif;
+}
