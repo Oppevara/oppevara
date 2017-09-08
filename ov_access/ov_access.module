@@ -36,7 +36,7 @@ function ov_access_node_access($node, $op, $account) {
     return NODE_ACCESS_IGNORE;
   }
 
-  if (is_object($node) && $node->type === 'h5p_content' && $op === 'update' && user_has_role($expert_role, $account)) {
+  if (is_object($node) && $node->type === 'h5p_content' && ($op === 'update' || $op === 'view') && user_has_role($expert_role, $account)) {
     $node_topic = isset($node->{$h5p_topic_field}[LANGUAGE_NONE][0]) ? $node->{$h5p_topic_field}[LANGUAGE_NONE][0]['tid'] : null;
     if (!$node_topic) {
       //watchdog('ov_access', 'Node is missing the defined topic field or its value', null, WATCHDOG_WARNING);
