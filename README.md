@@ -20,7 +20,7 @@ System will then try to check if any of the terms within the user profile would 
 
 ## Quirks and fixes
 
-1. By default, the server does not know about the .h5p file type, this raises an issue with files not being downloaded but shown inline instead. See [this](https://h5p.org/node/10840) and [this](https://www.drupal.org/node/417866) for more insights and detailed explanations. There are a few ways to fix that (first two solutions are initially the same and the third one could be written in a different way):
+1. By default, the server does not know about the .h5p file type, this raises an issue with files not being downloaded but shown inline instead. See [this](https://h5p.org/node/10840) and [this](https://www.drupal.org/node/417866) for more insights and detailed explanations. There are a few ways to fix that (first two solutions are initially the same and require a restart to the service; the third one could be written in a different way and should work without any extensive rights or restarts):
   - Add this line to `application/x-h5p h5p` **mime.types** file used by the server
   - Add this directive `AddType application/x-h5p .h5p` to the **mod_mime** portion of **httpd.conf** file
   - Add this to the **.htaccess** file of the instance (a standalone file could be added directly into the directory with all the exportable packages; this one seems to be the default **DRUPAL_ROOT/sites/default/files/h5p/exports**)
