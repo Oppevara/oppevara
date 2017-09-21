@@ -1,0 +1,6 @@
+name = Digiõppevara H5P Overrides
+description = Overrides some H5P content type's semantics and allowed tags
+package = Oppevara
+core = 7.x
+
+dependencies[] = oppevara

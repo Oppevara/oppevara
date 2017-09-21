@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara H5P Overrides module.
+ */
+
+function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major_version, $minor_version) {
+  if ($machine_name == 'H5P.Column' && $major_version == 1 && $minor_version == 5) {
+    array_push($semantics[0]->field->fields[0]->options,
+      'H5P.ImageMultipleHotspotQuestion 1.0',
+      'H5P.VisualMathInput 0.1',
+      'H5P.Geogebra 1.0',
+      'H5P.GridChecker 1.0'
+      );
+  }
+}
