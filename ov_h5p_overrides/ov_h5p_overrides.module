@@ -6,12 +6,46 @@
  */
 
 function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major_version, $minor_version) {
-  if ($machine_name == 'H5P.Column' && $major_version == 1 && $minor_version == 5) {
+
+  /*
+   * Add new options for H5P Column dropdown
+   */
+
+  if ($machine_name == 'H5P.Column' && $major_version == 1) {
     array_push($semantics[0]->field->fields[0]->options,
       'H5P.ImageMultipleHotspotQuestion 1.0',
       'H5P.VisualMathInput 0.1',
       'H5P.Geogebra 1.0',
       'H5P.GridChecker 1.0'
       );
+    $semantics[0]->field->fields[0]->options = array_unique($semantics[0]->field->fields[0]->options);
+  }
+
+  /*
+   *  Add sub and sup tags to certain content types
+   */
+
+  switch ($machine_name){
+    case 'H5P.SingleChoiceSet':
+      array_push($semantics[0]->field->fields[0]->tags,'sub','sup');
+      array_push($semantics[0]->field->fields[1]->field->tags,'sub','sup');
+      break;
+    case 'H5P.DragText':
+      array_push($semantics[0]->tags,'sub','sup');
+      // Change field type from textarea to WYSIWYG!
+      $semantics[1]->widget = 'html';
+      $semantics[1]->tags = array('p','sub','sup');
+      break;
+    case 'H5P.AdvancedText':
+      error_log('text');
+      array_push($semantics[0]->tags,'sub','sup');
+      break;
+    case 'H5P.Text':
+      array_push($semantics[0]->tags,'sub','sup');
+      break;
+    case 'H5P.Blanks':
+      array_push($semantics[1]->tags,'sub','sup');
+      array_push($semantics[2]->field->tags,'sub','sup');
+      break;
   }
 }
