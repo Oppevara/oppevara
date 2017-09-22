@@ -37,7 +37,6 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
       $semantics[1]->tags = array('p','sub','sup');
       break;
     case 'H5P.AdvancedText':
-      error_log('text');
       array_push($semantics[0]->tags,'sub','sup');
       break;
     case 'H5P.Text':
