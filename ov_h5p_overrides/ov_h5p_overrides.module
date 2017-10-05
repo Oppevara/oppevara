@@ -27,8 +27,8 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
 
   switch ($machine_name){
     case 'H5P.SingleChoiceSet':
-      array_push($semantics[0]->field->fields[0]->tags,'sub','sup');
-      array_push($semantics[0]->field->fields[1]->field->tags,'sub','sup');
+      array_push($semantics[0]->field->fields[0]->tags,'sub','sup', 'eqneditor');
+      array_push($semantics[0]->field->fields[1]->field->tags,'sub','sup', 'eqneditor');
       break;
     case 'H5P.DragText':
       array_push($semantics[0]->tags,'sub','sup');
@@ -44,7 +44,37 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
       break;
     case 'H5P.Blanks':
       array_push($semantics[1]->tags,'sub','sup');
-      array_push($semantics[2]->field->tags,'sub','sup');
+      array_push($semantics[2]->field->tags,'sub','sup', 'eqneditor');
+      break;
+    case 'H5P.MultiChoice':
+      array_push($semantics[1]->tags,'eqneditor');
+      array_push($semantics[2]->field->fields[0]->tags,'eqneditor');
       break;
   }
+}
+
+function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
+
+  if (isset($libraries['H5P.SingleChoiceSet']) || isset($libraries['H5P.MultiChoice']) || isset($libraries['H5P.Blanks'])) {
+    $scripts[] = (object) array(
+      'path' => 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML,' . $GLOBALS['base_url'] . '/ov_h5p/mathjax_conf.js',
+    );
+  }
+}
+
+
+/*
+ *  Declare custom endpoint for mathjax config file for CDN
+ */
+function ov_h5p_overrides_menu() {
+  $items = array();
+
+  $items['ov_h5p/mathjax_conf.js'] = array(
+    'page callback' => 'ov_h5p_overrides_page_callback',
+    'access callback' => TRUE, // Allow access to any user
+    'type' => MENU_CALLBACK,
+    'file' => 'mathjax_conf.inc',
+  );
+
+  return $items;
 }
