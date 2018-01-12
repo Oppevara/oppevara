@@ -59,7 +59,7 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
       break;
     case 'H5P.MarkTheWords':
       array_push($semantics[0]->tags,'sub','sup');
-      //array_push($semantics[1]->tags,'sub','sup');
+      array_push($semantics[1]->tags,'sub','sup');
       break;
   }
 }
