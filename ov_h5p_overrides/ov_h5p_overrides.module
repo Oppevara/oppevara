@@ -70,6 +70,10 @@ function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
     $scripts[] = (object) array(
       'path' => 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML,' . $GLOBALS['base_url'] . '/ov_h5p/mathjax_conf.js'
     );
+
+    $scripts[] = (object) array(
+      'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/math_jax_hacks.js'
+    );
   }
 }
 
