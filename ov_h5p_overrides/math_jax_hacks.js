@@ -1,8 +1,10 @@
 addEventListener("load", function() {
-	var lazy_math_jax_iter = 0;
-	function lazy_math_jax() {
-		MathJax.Hub.Typeset();
-		if (lazy_math_jax_iter++ < 10) setTimeout(lazy_math_jax, 500);
+
+	var nav_tabs = document.querySelectorAll("nav ol li a");
+	for (var i = 0; i < nav_tabs.length; i++) {
+		nav_tabs[i].addEventListener("click", function() {
+			MathJax.Hub.Typeset();
+		});
 	}
-	lazy_math_jax();
+
 });
