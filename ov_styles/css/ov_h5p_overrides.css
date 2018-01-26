@@ -12,7 +12,7 @@ h4 {
   display: inline;
 }
 
-.h5p-course-presentation .h5p-advanced-text .mjx-chtml span {
+.h5p-course-presentation .h5p-advanced-text .mjx-chtml * {
 	line-height:0;
 }
 
