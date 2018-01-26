@@ -29,19 +29,6 @@ addEventListener("load", function() {
 	}
 
 	function mjx_hacks(mjx_style) {
-		//	::: mjx late load triggers :::
-		function add_math_jax_triggers(selector) {
-			var els = document.querySelectorAll(selector);
-			for (var i = 0; i < els.length; i++) {
-				els[i].addEventListener("click", mjx_reload);
-			}
-		}
-
-		add_math_jax_triggers("nav ol li a");
-		add_math_jax_triggers(".h5p-footer-next-slide");
-		add_math_jax_triggers(".h5p-footer-previous-slide");
-		add_math_jax_triggers(".h5p-image-hotspot");
-
 		//	::: mjx style force on course presentation :::
 		var min_reset_rules = { "line-height" : "0" };
 		var rules = mjx_style.innerHTML.replace(/\n|\r/g, "").split("}");
@@ -75,5 +62,19 @@ addEventListener("load", function() {
 		}
 	}
 	mjx_load_check();
+
+	//	::: mjx late load triggers :::
+	function add_math_jax_triggers(selector) {
+		var els = document.querySelectorAll(selector);
+		for (var i = 0; i < els.length; i++) {
+			els[i].addEventListener("click", mjx_reload);
+		}
+	}
+
+	add_math_jax_triggers("nav ol li a");
+	add_math_jax_triggers(".h5p-footer-next-slide");
+	add_math_jax_triggers(".h5p-footer-previous-slide");
+	add_math_jax_triggers(".h5p-image-hotspot");
+
 
 });
