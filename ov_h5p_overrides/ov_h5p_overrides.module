@@ -29,7 +29,19 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
   }
 
   /*
-   *  Add sub and sup tags to certain content types
+   * Add new content types for Question Set (Quiz) content type
+   */
+
+  if ($machine_name == 'H5P.QuestionSet' && $major_version == 1) {
+    array_push($semantics[4]->field->options,
+      'H5P.ImageMultipleHotspotQuestion 1.0',
+      'H5P.ImageHotspots 1.5'
+    );
+    $semantics[4]->field->options = array_unique($semantics[4]->field->options);
+  }
+
+  /*
+   *  Add sub, sup and eqneditor tags to certain content types
    */
 
   switch ($machine_name){
