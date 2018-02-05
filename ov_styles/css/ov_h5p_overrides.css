@@ -11,3 +11,11 @@ h4 {
 .h5p-drag-droppable-words div, .h5p-drag-droppable-words span > p {
   display: inline;
 }
+
+.h5p-course-presentation .h5p-advanced-text .mjx-chtml * {
+	line-height:0;
+}
+
+.h5p-course-presentation p:last-child {
+	margin-bottom:1em;
+}

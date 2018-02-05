@@ -16,5 +16,13 @@ H5PEditor.HtmlAddons.h2.h2 = function (config, tags) {
     };
 
     // Re-add original ckeditor stylesheet and then our overrides
-    config.contentsCss = [ H5PEditor.basePath + 'ckeditor/contents.css', Drupal.settings.basePath + 'sites/all/modules/oppevara/ov_styles/css/ov_h5p_overrides.css' ];
+    var override_path;
+    if (typeof Drupal !== "undefined") {
+        override_path = Drupal.settings.basePath + 'sites/all/modules/oppevara/ov_styles/css/ov_h5p_overrides.css';
+    } else {
+        //  ¯\_(ツ)_/¯
+        override_path = "http://localhost:8888/geo5p/" + 'sites/all/modules/oppevara/ov_styles/css/ov_h5p_overrides.css';
+    }
+    
+    config.contentsCss = [ H5PEditor.basePath + 'ckeditor/contents.css', override_path ];
 };
