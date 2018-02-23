@@ -89,6 +89,7 @@ function ov_analytics_send_to_lrs($action, $data) {
       'Authorization' => "Basic $basicAuth",
       'Content-Length' => strlen($jsonData),
     ],
+    'timeout' => 45.0,
   ];
 
   $response = drupal_http_request($url, $options);
