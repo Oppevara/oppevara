@@ -22,5 +22,45 @@ function ov_oai_views_data() {
     ),
   );
 
+  $data['node']['h5p_embed_code'] = array(
+    'title' => t('H5P Embed code'),
+    'help' => t('Generates H5P object\'s embed code for OAI-PMH'),
+    'field' => array(
+      'handler' => 'ov_oai_h5p_embed_code',
+    ),
+  );
+
+  $data['node']['xml_title'] = array(
+    'title' => t('Title with language XML'),
+    'help' => t('Generates XML element with language as attribute'),
+    'field' => array(
+      'handler' => 'ov_oai_xml_title',
+    ),
+  );
+
+  $data['node']['xml_license'] = array(
+    'title' => t('License XML'),
+    'help' => t('Generates XML element with CC-BY license and attribute'),
+    'field' => array(
+      'handler' => 'ov_oai_xml_license',
+    ),
+  );
+
+  $data['node']['xml_string_no'] = array(
+    'title' => t('Custom Text - "no"'),
+    'help' => t('Just prints "no" - so Drupal wouldn\'t translate it'),
+    'field' => array(
+      'handler' => 'ov_oai_xml_string_no',
+    ),
+  );
+
+  $data['node']['xml_string_yes'] = array(
+    'title' => t('Custom Text - "yes"'),
+    'help' => t('Just prints "yes" - so Drupal wouldn\'t translate it'),
+    'field' => array(
+      'handler' => 'ov_oai_xml_string_no',
+    ),
+  );
+
   return $data;
 }
