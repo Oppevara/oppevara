@@ -1,0 +1,134 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara Analytics mdule.
+ */
+
+define('OV_ANALYTICS_XAPI_ENDPOINT', 'ajax/ov_analytics/xapi');
+
+/**
+ * Implements hook_js_alter().
+ * Is used for any internal pages, takes advantage of Drupal JS solution
+ */
+function ov_analytics_js_alter() {
+  drupal_add_js([
+    'ovAnalytics' => [
+      'endpointUrl' => base_path() . OV_ANALYTICS_XAPI_ENDPOINT,
+    ],
+  ], 'setting');
+  drupal_add_js(drupal_get_path('module', 'ov_analytics') . '/js/ov_analytics_h5p.js');
+}
+
+/**
+ * Implements hook_h5p_scripts_alter().
+ * Is used solely for external (embedded) pages, those are fully unrelated to
+ * the rest of Drupal JS logic
+ */
+function ov_analytics_h5p_scripts_alter(&$scripts, $libraries, $mode) {
+  if ( $mode === 'external' ) {
+    $scripts[] = (object) [
+      'path' => drupal_get_path('module', 'ov_analytics') . '/js/ov_analytics_h5p_external.js',
+      'version' => '',
+    ];
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function ov_analytics_menu() {
+  $items = [];
+  $items['admin/config/system/oppevara/analytics'] = [
+    'title' => 'Oppevara Analytics',
+    'description' => 'Configure analytics and provide required settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['ov_analytics_admin_settings'],
+    'access arguments' => ['administer site configuration'],
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'ov_analytics.admin.inc',
+  ];
+  $items[OV_ANALYTICS_XAPI_ENDPOINT] = [
+    'title' => 'xAPI endpoint',
+    'description' => 'AJAX callback to track H5P xAPI events.',
+    'type' => MENU_CALLBACK,
+    'page callback' => 'ov_analytics_xapi_endpoint_view',
+    'access callback' => TRUE,
+  ];
+
+  return $items;
+}
+
+/**
+ * Sends statement to the LRS endpoint.
+ * @param  string $action Gets added to the base endpoint URL (example: statements)
+ * @param  array  $data   Statement data
+ * @return mixed          Either response object of drupal_http_request() or NULL (in case configuration is not provided)
+ */
+function ov_analytics_send_to_lrs($action, $data) {
+  $endpoint = variable_get('ov_analytics_xapi_lrs_endpoint');
+  $authUser = variable_get('ov_analytics_xapi_lrs_auth_user');
+  $authPassword = variable_get('ov_analytics_xapi_lrs_auth_password');
+
+  // Fail silently if required data is not provided
+  if ( !( $endpoint && $authUser && $authPassword ) ) {
+    // TODO Consider throwing an exception, this would make things clearer for
+    // the caller
+    return NULL;
+  }
+
+  $url = $endpoint . '/' . $action;
+  $basicAuth = base64_encode("$authUser:$authPassword");
+  $jsonData = json_encode($data);
+  $options = [
+    'method' => 'POST',
+    'data' => $jsonData,
+    'headers' => [
+      'Content-Type' => 'application/json',
+      'X-Experience-API-Version' => '1.0.1',
+      'Authorization' => "Basic $basicAuth",
+      'Content-Length' => strlen($jsonData),
+    ],
+    'timeout' => 45.0,
+  ];
+
+  $response = drupal_http_request($url, $options);
+
+  if ( isset($response->error) ) {
+    $debug = [
+      'request' => [
+        'url' => $url,
+        'data' => $data,
+      ],
+      'response' => [
+        'code' => $response->code,
+        'status' => $response->status_message,
+        'error' => $response->error,
+      ]
+    ];
+
+    watchdog('ov_analytics', json_encode($debug), [], WATCHDOG_ERROR);
+  }
+
+  return $response;
+}
+
+/**
+ * AJAX endpoint handler for H5P xAPI statements
+ */
+function ov_analytics_xapi_endpoint_view() {
+  if ( isset($_POST['statement']) ) {
+    $data = json_decode($_POST['statement'], TRUE);
+    $response = ov_analytics_send_to_lrs('statements', $data);
+
+    if ( $response ) {
+      if ( isset($response->error) ) {
+        drupal_add_http_header('Status', "$response->code $response->status_message");
+      }
+    } else if ( is_null($response) ) {
+      drupal_add_http_header('Status', '403 Forbidden');
+    }
+  } else {
+    drupal_add_http_header('Status', '400 Bad Request');
+  }
+}

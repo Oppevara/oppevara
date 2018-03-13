@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara Analytics module install and uninstall.
+ */
+
+/**
+ * Implements hook_uninstall().
+ * @return void
+ */
+function ov_analytics_uninstall() {
+  variable_del('ov_analytics_xapi_lrs_endpoint');
+  variable_del('ov_analytics_xapi_lrs_auth_user');
+  variable_del('ov_analytics_xapi_lrs_auth_password');
+}

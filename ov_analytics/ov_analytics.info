@@ -1,0 +1,7 @@
+name = Digiõppevara Analytics
+description = Provides analytics and xAPI integration.
+package = Oppevara
+core = 7.x
+configure = admin/config/system/oppevara/analytics
+
+dependencies[] = oppevara

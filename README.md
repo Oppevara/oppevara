@@ -4,6 +4,21 @@
 
 All code should follow the [coding standards](https://www.drupal.org/docs/develop/standards) established by Drupal Core team.
 
+## Requirements
+
+* Drupal 7 and its modules:
+   * [H5P](https://www.drupal.org/project/h5p)
+   * H5P Editor
+   * xH5p CKEditor Math input
+   * [Digiõppevaramu](https://github.com/Oppevara/oppevara)
+      * Digiõppevara Access
+      * Digiõppevara H5P overrides
+      * Digiõppevara Styles
+   * Taxonomy
+   * [Taxonomy CSV import/export](https://www.drupal.org/project/taxonomy_csv)
+* PHP 7.0.14
+* MySQL 5.7.14
+
 ## Submodules
 
 ### ov_access
