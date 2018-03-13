@@ -58,7 +58,7 @@ function ov_oai_views_data() {
     'title' => t('Custom Text - "yes"'),
     'help' => t('Just prints "yes" - so Drupal wouldn\'t translate it'),
     'field' => array(
-      'handler' => 'ov_oai_xml_string_no',
+      'handler' => 'ov_oai_xml_string_yes',
     ),
   );
 
