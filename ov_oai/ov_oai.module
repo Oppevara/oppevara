@@ -1,0 +1,13 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara OAI-PMH helper module.
+ */
+
+/**
+ * Implements hook_views_api()
+ */
+function ov_oai_views_api($module = NULL, $api = NULL) {
+  return array('api' => '3.0');
+}
