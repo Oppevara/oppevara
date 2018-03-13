@@ -99,8 +99,8 @@ class ov_oai_h5p_embed_code extends views_handler_field {
     global $base_url;
 
     $embedCode = '<![CDATA[';
-    $embedCode .= '<iframe src="' . $base_url . 'h5p/embed/' . $values->nid . '" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
-    $embedCode .= '<script src="' . $base_url . drupal_get_path('module', 'h5p') . '/library/js/h5p-resizer.js" charset="UTF-8"></script>';
+    $embedCode .= '<iframe src="' . $base_url . '/h5p/embed/' . $values->nid . '" frameborder="0" allowfullscreen="allowfullscreen"></iframe>';
+    $embedCode .= '<script src="' . $base_url . '/' . drupal_get_path('module', 'h5p') . '/library/js/h5p-resizer.js" charset="UTF-8"></script>';
     $embedCode .= ']]>';
 
     // Sanitize and return.
