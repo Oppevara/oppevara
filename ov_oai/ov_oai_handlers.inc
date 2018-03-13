@@ -26,7 +26,7 @@ class ov_oai_author_vcard extends views_handler_field {
     $userEmail = $user->mail;
 
     // Sanitize and return.
-    return $this->sanitize_value('<![CDATA[
+    return '<![CDATA[
       BEGIN:VCARD
       VERSION:3.0
       N:'. $lastName . ';' . $firstName . ';;;
@@ -34,7 +34,7 @@ class ov_oai_author_vcard extends views_handler_field {
       ' ORG:
       EMAIL;TYPE=internet,pref:' . $userEmail .
       ' END:VCARD
-      ]]>');
+      ]]>';
   }
 
   /**
@@ -132,7 +132,7 @@ class ov_oai_xml_title extends views_handler_field {
     $xml .= '</lom:string>';
 
     // Sanitize and return.
-    return $this->sanitize_value($xml);
+    return $xml;
   }
 
   /**
@@ -157,7 +157,7 @@ class ov_oai_xml_license extends views_handler_field {
     $xml = '<string language="x-t-cc-url">http://creativecommons.org/licenses/by/3.0/</string>';
 
     // Sanitize and return.
-    return $this->sanitize_value($xml);
+    return $xml;
   }
 
   /**
