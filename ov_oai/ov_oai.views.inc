@@ -70,5 +70,13 @@ function ov_oai_views_data() {
     ),
   );
 
+  $data['node']['xml_keywords'] = array(
+    'title' => t('Keywords XML'),
+    'help' => t('Generates XML elements of tags with language as attribute'),
+    'field' => array(
+      'handler' => 'ov_oai_xml_keywords',
+    ),
+  );
+
   return $data;
 }

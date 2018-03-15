@@ -268,3 +268,36 @@ class ov_oai_xml_string_yes extends views_handler_field {
     // do nothing -- to override the parent query.
   }
 }
+
+/**
+ * Handler for XML title field
+ */
+class ov_oai_xml_keywords extends views_handler_field {
+
+  /**
+   * Overrides views_handler_field::render().
+   */
+  function render($values) {
+
+    $node = node_load($values->nid);
+
+    field_view_field('node', $node, 'field_sildid', array('default'));
+
+    // set default tag
+    $xml = '<lom:string language="et">TLU materjal</lom:string>';
+
+    foreach($node->field_sildid[LANGUAGE_NONE] as $term){
+      $xml .= '<lom:string language="et">' . $term["taxonomy_term"]->name . '</lom:string>';
+    }
+
+    // Sanitize and return.
+    return $xml;
+  }
+
+  /**
+   * Overrides views_handler_field::query().
+   */
+  function query() {
+    // do nothing -- to override the parent query.
+  }
+}
