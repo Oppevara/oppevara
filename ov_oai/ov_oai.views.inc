@@ -14,6 +14,14 @@ function ov_oai_views_data() {
     ),
   );
 
+  $data['node']['xml_contribute'] = array(
+    'title' => t('Contributors XML'),
+    'help' => t('Generates full XML for contribute field with author and publisher + vcard'),
+    'field' => array(
+      'handler' => 'ov_oai_xml_contribute',
+    ),
+  );
+
   $data['node']['taxon_path'] = array(
     'title' => t('EstCore Taxonomy XML'),
     'help' => t('Generates XML from taxonomy for OAI-PMH'),

@@ -47,6 +47,75 @@ class ov_oai_author_vcard extends views_handler_field {
 
 
 /**
+ * Handler for Author VCard field
+ */
+class ov_oai_xml_contribute extends views_handler_field {
+
+  /**
+   * Overrides views_handler_field::render().
+   */
+  function render($values) {
+    $firstName = '';
+    $lastName = '';
+
+    $node = node_load($values->nid);
+    $user = user_load($node->uid);
+
+    if (!empty($user->field_first_name[LANGUAGE_NONE][0]['value'])) {
+      $firstName = $user->field_first_name[LANGUAGE_NONE][0]['value'];
+    }
+
+    if (!empty($user->field_last_name[LANGUAGE_NONE][0]['value'])) {
+      $lastName = $user->field_last_name[LANGUAGE_NONE][0]['value'];
+    }
+
+    $userEmail = $user->mail;
+
+    // Sanitize and return.
+    $vcard = '<![CDATA[
+      BEGIN:VCARD
+      VERSION:3.0
+      N:'. $lastName . ';' . $firstName . ';;;
+      FN:' . $firstName . ' ' . $lastName .
+      ' ORG:
+      EMAIL;TYPE=internet,pref:' . $userEmail .
+      ' END:VCARD
+      ]]>';
+
+
+
+    return '<contribute>
+        <lom:role>
+          <lom:source>LOMv1.0</lom:source>
+          <lom:value>author</lom:value>
+        </lom:role>
+        <lom:entity>' . $vcard . '</lom:entity>
+        <lom:date uniqueElementName="date">
+            <lom:dateTime>' . date('c', $node->created) . '</lom:dateTime>
+        </lom:date>
+      </contribute>
+      <contribute>
+        <lom:role>
+            <lom:source>LOMv1.0</lom:source>
+            <lom:value>publisher</lom:value>
+        </lom:role>
+        <lom:date uniqueElementName="date">
+            <lom:dateTime>' . date('c', $node->created) . '</lom:dateTime>
+        </lom:date>
+      </contribute>';
+  }
+
+  /**
+   * Overrides views_handler_field::query().
+   */
+  function query() {
+    // do nothing -- to override the parent query.
+  }
+}
+
+
+
+/**
  * Handler for EstCore Gymnasium taxonomy
  */
 class ov_oai_taxon_path extends views_handler_field {
