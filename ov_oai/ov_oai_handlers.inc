@@ -47,7 +47,7 @@ class ov_oai_author_vcard extends views_handler_field {
 
 
 /**
- * Handler for Author VCard field
+ * Handler for contributors XML combo-element
  */
 class ov_oai_xml_contribute extends views_handler_field {
 
@@ -55,36 +55,48 @@ class ov_oai_xml_contribute extends views_handler_field {
    * Overrides views_handler_field::render().
    */
   function render($values) {
-    $firstName = '';
-    $lastName = '';
+    $xml = '';
 
     $node = node_load($values->nid);
-    $user = user_load($node->uid);
+    $users = [];
 
-    if (!empty($user->field_first_name[LANGUAGE_NONE][0]['value'])) {
-      $firstName = $user->field_first_name[LANGUAGE_NONE][0]['value'];
+    // Add main author
+    array_push($users, user_load($node->uid));
+
+    // Add coauthors
+    if(!empty($node->field_coauthors)){
+      foreach ($node->field_coauthors[LANGUAGE_NONE] as $coauthor){
+        array_push($users, user_load($coauthor['uid']));
+      }
     }
 
-    if (!empty($user->field_last_name[LANGUAGE_NONE][0]['value'])) {
-      $lastName = $user->field_last_name[LANGUAGE_NONE][0]['value'];
-    }
+    foreach ($users as $user){
+      $firstName = '';
+      $lastName = '';
 
-    $userEmail = $user->mail;
+      if (!empty($user->field_first_name[LANGUAGE_NONE][0]['value'])) {
+        $firstName = $user->field_eesnimi[LANGUAGE_NONE][0]['value'];
+      }
 
-    // Sanitize and return.
-    $vcard = '<![CDATA[
+      if (!empty($user->field_last_name[LANGUAGE_NONE][0]['value'])) {
+        $lastName = $user->field_last_name[LANGUAGE_NONE][0]['value'];
+      }
+
+      $userEmail = $user->mail;
+
+      // Generate VCard
+      $vcard = '<![CDATA[
       BEGIN:VCARD
       VERSION:3.0
       N:'. $lastName . ';' . $firstName . ';;;
       FN:' . $firstName . ' ' . $lastName .
-      ' ORG:
+        ' ORG:
       EMAIL;TYPE=internet,pref:' . $userEmail .
-      ' END:VCARD
+        ' END:VCARD
       ]]>';
 
-
-
-    return '<contribute>
+      // Add author
+      $xml .= '<contribute>
         <lom:role>
           <lom:source>LOMv1.0</lom:source>
           <lom:value>author</lom:value>
@@ -93,8 +105,11 @@ class ov_oai_xml_contribute extends views_handler_field {
         <lom:date uniqueElementName="date">
             <lom:dateTime>' . date('c', $node->created) . '</lom:dateTime>
         </lom:date>
-      </contribute>
-      <contribute>
+      </contribute>';
+    }
+
+    // Add publisher info (for date)
+    $xml .= '<contribute>
         <lom:role>
             <lom:source>LOMv1.0</lom:source>
             <lom:value>publisher</lom:value>
@@ -103,6 +118,8 @@ class ov_oai_xml_contribute extends views_handler_field {
             <lom:dateTime>' . date('c', $node->created) . '</lom:dateTime>
         </lom:date>
       </contribute>';
+
+    return $xml;
   }
 
   /**
@@ -112,7 +129,6 @@ class ov_oai_xml_contribute extends views_handler_field {
     // do nothing -- to override the parent query.
   }
 }
-
 
 
 /**
