@@ -75,7 +75,7 @@ class ov_oai_xml_contribute extends views_handler_field {
       $lastName = '';
 
       if (!empty($user->field_first_name[LANGUAGE_NONE][0]['value'])) {
-        $firstName = $user->field_eesnimi[LANGUAGE_NONE][0]['value'];
+        $firstName = $user->field_first_name[LANGUAGE_NONE][0]['value'];
       }
 
       if (!empty($user->field_last_name[LANGUAGE_NONE][0]['value'])) {
