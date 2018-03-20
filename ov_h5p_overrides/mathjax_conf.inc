@@ -1,7 +1,8 @@
 <?php
 
 function ov_h5p_overrides_page_callback() {
-  Header("content-type: application/x-javascript");
+  header("Access-Control-Allow-Origin: *");
+  header("content-type: application/x-javascript");
 
   echo "MathJax.Ajax.loadComplete('" . $GLOBALS['base_url'] . "/ov_h5p/mathjax_conf.js');";
 
