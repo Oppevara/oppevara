@@ -21,7 +21,7 @@ MathJax.Hub.Config(
 
 // Dispatch resize event when math rendering is complete (for H5P iframe resize)
 MathJax.Hub.Queue(function () {
-  window.top.dispatchEvent(new Event('resize'));
+  H5P.trigger(H5P.instances[0], 'resize');
 });
 MATHJAXJS;
 }
