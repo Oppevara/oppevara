@@ -14,3 +14,60 @@ function ov_analytics_uninstall() {
   variable_del('ov_analytics_xapi_lrs_auth_user');
   variable_del('ov_analytics_xapi_lrs_auth_password');
 }
+
+/**
+ * Implements hook_schema().
+ */
+function ov_analytics_schema() {
+  $schema['ov_analytics_statements'] = [
+    'description' => 'Stores statements that could not be sent to LRS.',
+    'fields' => [
+      'code' => [
+        'type' => 'int',
+        'unsigned' => FALSE,
+        'size' => 'small',
+        'not null' => TRUE,
+        'description' => 'Response code.',
+      ],
+      'status_message' => [
+        'type' => 'text',
+        'size' => 'small',
+        'not null' => FALSE,
+        'description' => 'Status message from the response, if response was received.',
+      ],
+      'error' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Error message.',
+      ],
+      'statement' => [
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+        'description' => 'JSON-encoded statement.',
+      ],
+      'created' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Creation timestamp.'
+      ],
+    ],
+    'indexes' => [
+      'code' => ['code'],
+      'created_timestamp' => ['created'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Install schema
+ */
+function ov_analytics_update_7100() {
+  drupal_install_schema('ov_analytics');
+}

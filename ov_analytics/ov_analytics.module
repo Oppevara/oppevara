@@ -108,6 +108,14 @@ function ov_analytics_send_to_lrs($action, $data) {
     ];
 
     watchdog('ov_analytics', json_encode($debug), [], WATCHDOG_ERROR);
+    db_insert('ov_analytics_statements')
+      ->fields([
+        'code' => $response->code,
+        'status_message' => $response->status_message,
+        'error' => $response->error,
+        'statement' => $jsonData,
+        'created' => REQUEST_TIME,
+      ])->execute();
   }
 
   return $response;
