@@ -1,0 +1,22 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara TEMPORARY module for setting bulk coauthors for musician's accounts.
+ */
+
+/*
+ *  Declare custom endpoint to run the command
+ */
+function ov_bulk_coauthors_menu() {
+  $items = array();
+
+  $items['ov_bulk_coauthors/run'] = array(
+    'page callback' => 'ov_bulk_coauthors_query',
+    'access arguments' => 'access administration pages',
+    'type' => MENU_CALLBACK,
+    'file' => 'ov_bulk_coauthors_query.inc',
+  );
+
+  return $items;
+}
