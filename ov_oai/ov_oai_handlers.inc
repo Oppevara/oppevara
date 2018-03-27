@@ -302,8 +302,10 @@ class ov_oai_xml_keywords extends views_handler_field {
     // set default tag
     $xml = '<lom:string language="et">TLU materjal</lom:string>';
 
-    foreach($node->field_sildid[LANGUAGE_NONE] as $term){
-      $xml .= '<lom:string language="et">' . $term["taxonomy_term"]->name . '</lom:string>';
+    if(isset($node->field_sildid)){
+      foreach($node->field_sildid[LANGUAGE_NONE] as $term){
+        $xml .= '<lom:string language="et">' . $term["taxonomy_term"]->name . '</lom:string>';
+      }
     }
 
     // Sanitize and return.
