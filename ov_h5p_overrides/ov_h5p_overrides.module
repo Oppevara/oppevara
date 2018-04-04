@@ -73,11 +73,14 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
       array_push($semantics[0]->tags,'sub','sup');
       array_push($semantics[1]->tags,'sub','sup');
       break;
+    case 'H5P.TrueFalse':
+      array_push($semantics[1]->tags,'eqneditor');
+      break;
   }
 }
 
 function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
-  if (isset($libraries['H5P.SingleChoiceSet']) || isset($libraries['H5P.MultiChoice']) || isset($libraries['H5P.Blanks']) || isset($libraries['H5P.AdvancedText']) || isset($libraries['H5P.Text']) || isset($libraries['H5P.VisualMathInput']) || isset($libraries['H5P.ImageHotspots'])) {
+  if (isset($libraries['H5P.SingleChoiceSet']) || isset($libraries['H5P.MultiChoice']) || isset($libraries['H5P.Blanks']) || isset($libraries['H5P.AdvancedText']) || isset($libraries['H5P.Text']) || isset($libraries['H5P.VisualMathInput']) || isset($libraries['H5P.ImageHotspots']) || isset($libraries['H5P.TrueFalse']) ) {
     $scripts[] = (object) array(
       'path' => 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_CHTML,' . $GLOBALS['base_url'] . '/ov_h5p/mathjax_conf.js',
       'version' => ''
