@@ -16,7 +16,7 @@ function ov_h5p_overrides_h5p_semantics_alter(&$semantics, $machine_name, $major
       'H5P.ImageMultipleHotspotQuestion 1.0',
       'H5P.VisualMathInput 1.0',
       'H5P.VisualMathInput 0.1',
-      'H5P.Geogebra 1.0',
+      'H5P.Geogebra 1.1',
       'H5P.GridChecker 1.0',
       'H5P.ImageSlider 1.0',
       'H5P.ImageJuxtaposition 1.1',
