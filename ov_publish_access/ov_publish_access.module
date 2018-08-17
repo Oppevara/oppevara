@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara Publishing Access module.
+ */
+
+
+/*
+ *  Hook into node_validate
+ */
+
+function ov_publish_access_node_validate($node, $form, $form_state) {
+
+  if($node->nid && $form["#node"]->status == 1 && $node->status == 0){
+    form_set_error('form', t('Juba avaldatud materjale ei saa hetkel kahjuks peita.'));
+  }
+
+  if($node->field_ready[LANGUAGE_NONE][0]){
+    if($node->nid && intval($form["#node"]->field_ready[LANGUAGE_NONE][0]["value"]) == 1 && $node->field_ready[LANGUAGE_NONE][0]["value"] == 0){
+      form_set_error('form', t('Juba valminuks märgitud materjale ei saa enam poolikuks märkida.'));
+    }
+  }
+
+}
