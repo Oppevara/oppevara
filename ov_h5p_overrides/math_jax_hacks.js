@@ -36,6 +36,7 @@ addEventListener("load", function() {
 		for (var i = 0; i < rules.length - 1; i++) {
 			if (rules[i][0] === "@") continue;
 			n_css += augment_rule(rules[i], min_reset_rules, ".h5p-course-presentation .h5p-advanced-text") + "\n";
+			n_css += augment_rule(rules[i], min_reset_rules, ".h5p-dragquestion .h5p-advanced-text") + "\n";
 		}
 		
 		//	add new style
