@@ -67,14 +67,37 @@ addEventListener("load", function() {
 	function add_math_jax_triggers(selector) {
 		var els = document.querySelectorAll(selector);
 		for (var i = 0; i < els.length; i++) {
+            els[i].removeEventListener("click", mjx_reload);
 			els[i].addEventListener("click", mjx_reload);
 		}
 	}
 
-	add_math_jax_triggers("nav ol li a");
-	add_math_jax_triggers(".h5p-footer-next-slide");
-	add_math_jax_triggers(".h5p-footer-previous-slide");
-	add_math_jax_triggers(".h5p-image-hotspot");
+
+	function add_all_triggers(){
+        add_math_jax_triggers("nav ol li a"); // Location unknown
+        add_math_jax_triggers(".h5p-image-hotspot");
+        add_math_jax_triggers(".joubel-tip-container"); // Hint inside text input
+        add_math_jax_triggers(".h5p-element-button"); // Buttons that open extra h5p elements (like Text or a complete Fill-in-blanks) in Course presentation
+        add_math_jax_triggers(".h5p-interaction-button"); // Buttons that open extra h5p elements in interactive video
+	}
+	add_all_triggers();
+
+
+	// Rerender math on each new slide in Course Presentation
+    H5P.externalDispatcher.on('xAPI', function (event) {
+        if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/progressed" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.CoursePresentation") != -1){
+			mjx_reload();
+			add_all_triggers(); // Add all triggers again to new slide
+		}
+    });
+
+    // Set an event listener when Multiple Choice is answered and the Retry button is displayed
+    H5P.externalDispatcher.on('xAPI', function (event) {
+        if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1){
+            add_math_jax_triggers(".h5p-question-try-again"); // Retry button in MultiChoice
+        }
+    });
+
 
 
 });
