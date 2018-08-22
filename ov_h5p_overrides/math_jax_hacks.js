@@ -100,5 +100,20 @@ addEventListener("load", function() {
     });
 
 
+    // > TODO beta
+    //	::: mjx drag triggers :::
+    function add_drag_jax_triggers(selector) {
+        var els = document.querySelectorAll(selector);
+        for (var i = 0; i < els.length; i++) {
+            els[i].removeEventListener("mouseup", mjx_reload);
+            els[i].addEventListener("mouseup", function(){
+                setTimeout(function(){
+                    mjx_reload();
+                },100)
+            });
+        }
+    }
+    add_drag_jax_triggers(".ui-draggable");
+
 
 });
