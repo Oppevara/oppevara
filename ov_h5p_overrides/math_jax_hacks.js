@@ -86,17 +86,14 @@ addEventListener("load", function() {
 
 	// Rerender math on each new slide in Course Presentation
     H5P.externalDispatcher.on('xAPI', function (event) {
-        if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/progressed" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.CoursePresentation") != -1){
-			mjx_reload();
-			add_all_triggers(); // Add all triggers again to new slide
+    	if(event.data.statement.verb.id && event.data.statement.context.contextActivities.category) {
+            if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/progressed" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.CoursePresentation") != -1){
+                mjx_reload();
+                add_all_triggers(); // Add all triggers again to new slide
+            } else if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1){
+                add_math_jax_triggers(".h5p-question-try-again"); // Retry button in MultiChoice
+            }
 		}
-    });
-
-    // Set an event listener when Multiple Choice is answered and the Retry button is displayed
-    H5P.externalDispatcher.on('xAPI', function (event) {
-        if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1){
-            add_math_jax_triggers(".h5p-question-try-again"); // Retry button in MultiChoice
-        }
     });
 
 
