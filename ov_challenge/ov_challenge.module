@@ -1,0 +1,543 @@
+<?php
+
+/**
+* @file
+* Drupal Oppevara Challenge module.
+*/
+
+// XXX Add logic to remove challenges and results if content is deleted
+
+/**
+* UUID V4 generator
+* Source: https://stackoverflow.com/a/15875555/2704169
+* @return string UUID V4
+*/
+function _ov_challenge_generate_uuidv4() {
+  $data = (function_exists('random_bytes')) ? random_bytes(16) : openssl_random_pseudo_bytes(16);
+  $data[6] = chr(ord($data[6]) & 0x0f | 0x40); // set version to 0100
+  $data[8] = chr(ord($data[8]) & 0x3f | 0x80); // set bits 6-7 to 10
+
+  return vsprintf('%s%s-%s-%s-%s-%s%s%s', str_split(bin2hex($data), 4));
+}
+
+/**
+* Generates a string of random numbers from 0 to 9 for a given length
+* Source: https://stackoverflow.com/a/13169091/2704169
+* @param  int    $length Length of the resulting string
+* @return string         String of random numbers of given length
+*/
+function _ov_challenge_random_number($length) {
+  $result = '';
+
+  for($i = 0; $i < $length; $i++) {
+    $result .= (function_exists('random_int')) ? random_int(0, 9) : mt_rand(0, 9);
+  }
+
+  return $result;
+}
+
+/**
+* Checks if challenge code is unique in context of a certain content.
+* @param  int     $contentId Content identifier
+* @param  string  $code      Generated code
+* @return boolean
+*/
+function _ov_challenge_is_unique_challenge_code($code, $contentId) {
+  $query = db_select('ov_challenges', 'c');
+  $query->condition('c.content_id', $contentId);
+  $query->condition('c.code', $code);
+  $query->addExpression('COUNT(*)');
+  $query->countQuery();
+  $count = $query->execute()->fetchField();
+
+  return (int)$count === 0;
+}
+
+/**
+* Generates unique challenge code for a content. The code could have variable
+* length as the length is raised after a certain amount of failed checks.
+* @param  int    $contentId Content identifier
+* @return string            Unique challenge code
+*/
+function _ov_challenge_generate_unique_challenge_code($contentId) {
+  $iteration = 1;
+  $length = 6;
+
+  $code = _ov_challenge_random_number($length);
+
+  while(!_ov_challenge_is_unique_challenge_code($code, $contentId)) {
+    $code = _ov_challenge_random_number($length);
+    $iteration++;
+    if ($iteration > 3) {
+      $length++;
+      $iteration = 0;
+    }
+  }
+
+  return $code;
+}
+
+/**
+* Returns node title for a certain H5P content identifier.
+* @param  int $contentId H5P content identifier
+* @return mixed          Either node title or NULL
+*/
+function _ov_challenge_get_node_title_by_content_id($contentId) {
+  $node = db_select('node', 'n')
+  ->fields('n', ['title',])
+  ->condition('n.vid', $contentId)
+  ->execute()
+  ->fetchObject();
+
+  return $node ? $node->title : NULL;
+}
+
+/**
+* Checks if H5P content exists.
+* @param  int $contentId H5P content identifier
+* @return boolean
+*/
+function _ov_challenge_check_if_h5p_content_exists($contentId) {
+  $node = db_select('h5p_nodes', 'n')
+  ->fields('n', ['content_id',])
+  ->condition('n.content_id', $contentId)
+  ->execute()
+  ->fetchObject();
+
+  return !!$node;
+}
+
+/**
+* Returns challenge object by combination of content_id and code.
+* @param  int    $contentId H5P content identifier
+* @param  string $code      Challenge code
+* @return mixed             Challenge object or empty result
+*/
+function ov_challenge_get_challenge_by_content_id_and_code($contentId, $code) {
+  $result = db_select('ov_challenges', 'c')
+  ->fields('c')
+  ->condition('c.content_id', $contentId)
+  ->condition('c.code', $code)
+  ->execute()
+  ->fetchObject();
+
+  return $result;
+}
+
+/**
+* Returns challenge by UUID.
+* @param  string $uuid Challenge UUID
+* @return mixed        Challenge object or empty result
+*/
+function ov_challenge_get_challenge_by_uuid($uuid) {
+  $result = db_select('ov_challenges', 'c')
+  ->fields('c')
+  ->condition('c.uuid', $uuid)
+  ->execute()
+  ->fetchObject();
+
+  return $result;
+}
+
+/**
+* Returns challenge by id.
+* @param  int $id Challenge unique identifier
+* @return mixed   Challenge object or empty result
+*/
+function ov_challenge_get_challenge_by_id($id) {
+  $result = db_select('ov_challenges', 'c')
+  ->fields('c')
+  ->condition('c.id', $id)
+  ->execute()
+  ->fetchObject();
+
+  return $result;
+}
+
+/**
+* Returns challenge points by UUID.
+* @param  string $uuid Single challenge player points UUID
+* @return mixed        Challenge points object or empty result
+*/
+function ov_challenge_get_challenge_points_by_uuid($uuid) {
+  $result = db_select('ov_challenge_points', 'cp')
+  ->fields('cp')
+  ->condition('cp.uuid', $uuid)
+  ->execute()
+  ->fetchObject();
+
+  return $result;
+}
+
+/**
+* Determines if challenge is still active.
+* @param  object  $challenge Challenge object
+* @return boolean
+*/
+function ov_challenge_is_active_challenge($challenge) {
+  return (int)$challenge->finished > time();
+}
+
+/**
+* Implements hook_h5p_scripts_alter().
+*/
+function ov_challenge_h5p_scripts_alter(&$scripts, $libraries, $mode) {
+  $scripts[] = (object) [
+    'path' => 'https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js',
+    'version' => '',
+  ];
+  $scripts[] = (object) [
+    'path' => drupal_get_path('module', 'ov_challenge') . '/js/ov_challenge.js',
+    'version' => '',
+  ];
+}
+
+/**
+* Implements hook_h5p_styles_alter().
+*/
+function ov_challenge_h5p_styles_alter(&$styles, $libraries, $mode) {
+  $styles[] = (object) [
+    'path' => drupal_get_path('module', 'ov_challenge') . '/css/ov_challenge.css',
+    'version' => '',
+  ];
+}
+
+/**
+* Implements hook_menu().
+*/
+function ov_challenge_menu() {
+  $items['ov-challenge-ajax/create-new.json'] = [
+    'page callback' => 'ov_challenge_ajax_create_new',
+    'access callback' => 'ov_challenge_access_create_new',
+    'type' => MENU_LOCAL_TASK,
+  ];
+  $items['ov-challenge-ajax/start-playing.json'] = [
+    'page callback' => 'ov_challenge_ajax_start_playing',
+    'access callback' => 'ov_challenge_access_start_playing',
+    'type' => MENU_LOCAL_TASK,
+  ];
+  $items['ov-challenge-ajax/set-finished.json'] = [
+    'page callback' => 'ov_challenge_ajax_set_finished',
+    'access callback' => 'ov_challenge_access_set_finished',
+    'type' => MENU_LOCAL_TASK,
+  ];
+  $items['ov-challenge/results/%'] = [
+    'title' => 'Results',
+    'page callback' => 'ov_challenge_results_page',
+    'page arguments' => [2],
+    'access callback' => 'ov_challenge_access_results_page',
+    'type' => MENU_CALLBACK,
+  ];
+
+  return $items;
+}
+
+/**
+* Access callback for creating new Challenge.
+* @return boolean
+*/
+function ov_challenge_access_create_new() {
+  return TRUE;
+}
+
+/**
+* Callback for starting a new Challenge.
+*/
+function ov_challenge_ajax_create_new() {
+  // TODO Consider some token validation
+  /*if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+  return H5PCore::ajaxError(t('Invalid security token.'));
+}*/
+
+if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($_POST['email']) && is_numeric($_POST['duration'])) {
+  if (!valid_email_address($_POST['email'])) {
+    return H5PCore::ajaxError(t('Provided email address is invalid.'));
+  }
+
+  if ((int)$_POST['duration'] < 1 && (int)$_POST['duration'] > 168 ) {
+    return H5PCore::ajaxError(t('Provided duration is invalid.'));
+  }
+
+  if (!_ov_challenge_check_if_h5p_content_exists((int)$_POST['contentId'])) {
+    return H5PCore::ajaxError();
+  }
+
+  $code = _ov_challenge_generate_unique_challenge_code((int)$_POST['contentId']);
+  $uuid = _ov_challenge_generate_uuidv4();
+  $title = $_POST['title'];
+  $email = $_POST['email'];
+  $started = time();
+  $finished = $started + ((int)$_POST['duration'] * 60 * 60);
+  $results = url('ov-challenge/results/' . $uuid, [
+    'absolute' => TRUE,
+  ]);
+  $id = db_insert('ov_challenges')->fields([
+    'content_id' => (int)$_POST['contentId'],
+    'title' => $title,
+    'email' => $email,
+    'started' => $started,
+    'finished' => $finished,
+    'code' => $code,
+    'uuid' => $uuid,
+    ])->execute();
+
+    $message = t("You have created a new challenge: @title.\nThe title of a resource for this challenge is: @ctitle.\n\nThe challege will be running from @started to @finished (the duration would be @hours hours).\n\nChallenge code to participate is: @code\n\nYou can track results at: @results\nAnother notification containing results would be sent to you soon after the challenge is over.\nThe results link would still be active for at least 36 hours after the challenge ends.\n\n\nBest regards,\nChallenge team.", [
+      '@title' => $title,
+      '@ctitle' => _ov_challenge_get_node_title_by_content_id((int)$_POST['contentId']),
+      '@started' => format_date($started, 'long'),
+      '@finished' => format_date($finished, 'long'),
+      '@hours' => (int)$_POST['duration'],
+      '@code' => $code,
+      '@results' => $results,
+    ]);
+    $params = [
+      'body' => check_markup($message, 'plain_text'),
+    ];
+    drupal_mail('ov_challenge', 'new_challenge_created', $email, language_default(), $params);
+
+    return H5PCore::ajaxSuccess([
+      'code' => $code,
+      'url' => $results,
+    ]);
+  }
+
+  return H5PCore::ajaxError();
+}
+
+/**
+* Access callback for joining a challenge.
+* @return boolean
+*/
+function ov_challenge_access_start_playing() {
+  return TRUE;
+}
+
+/**
+* Callback for joining an existing challenge.
+*/
+function ov_challenge_ajax_start_playing() {
+  // TODO Consider some token validation or other protective measures
+
+  if (is_numeric($_POST['contentId']) && is_string($_POST['name']) && is_numeric($_POST['code'])) {
+    $challenge = ov_challenge_get_challenge_by_content_id_and_code((int)$_POST['contentId'], $_POST['code']);
+
+    if ($challenge && ov_challenge_is_active_challenge($challenge)) {
+      $uuid = _ov_challenge_generate_uuidv4();
+      db_insert('ov_challenge_points')->fields([
+        'id' => $challenge->id,
+        'uuid' => $uuid,
+        'name' => $_POST['name'],
+        'started' => time(),
+        ])->execute();
+
+      $data = [
+        'uuid' => $uuid,
+        'challenge' => [
+          'title' => $challenge->title,
+          'started' => $challenge->started,
+          'finished' => $challenge->finished,
+        ],
+      ];
+
+      user_cookie_save(['ov-challenge-for-' . (int)$_POST['contentId'] => json_encode($data),]);
+      return H5PCore::ajaxSuccess($data);
+    } else if ($challenge) {
+      if (!ov_challenge_is_active_challenge($challenge)) {
+        return H5PCore::ajaxError(t('Challenge is no longer active.'));
+      }
+    } else {
+      return H5PCore::ajaxError(t('No challenge could be found for provided code.'));
+    }
+  }
+
+  return H5PCore::ajaxError();
+}
+
+/**
+* Access callback for finishing the challenge.
+* @return boolean
+*/
+function ov_challenge_access_set_finished() {
+  return TRUE;
+}
+
+/**
+* Callback for finishing an existing challenge.
+*/
+function ov_challenge_ajax_set_finished() {
+  // TODO Consider some token validation or other protective measure
+
+  if (is_numeric($_POST['contentId']) && is_string($_POST['uuid']) && is_numeric($_POST['score']) && is_numeric($_POST['maxScore'])) {
+    $points = ov_challenge_get_challenge_points_by_uuid($_POST['uuid']);
+
+    if ($points) {
+      $challenge = ov_challenge_get_challenge_by_id($points->id);
+
+      if ($challenge && ov_challenge_is_active_challenge($challenge)) {
+        db_update('ov_challenge_points')
+        ->fields([
+          'finished' => time(),
+          'points' => $_POST['score'],
+          'max_points' => $_POST['maxScore'],
+        ])
+        ->expression('tries_count', 'tries_count + :amount', [':amount' => 1,])
+        ->condition('uuid', $_POST['uuid'])
+        ->execute();
+
+        return H5PCore::ajaxSuccess();
+      } else if ($challenge) {
+        if (!ov_challenge_is_active_challenge($challenge)) {
+          return H5PCore::ajaxError(t('Challenge is no longer active.'));
+        }
+      }
+    }
+  }
+
+  return H5PCore::ajaxError();
+}
+
+/**
+* Challenge results page callback.
+* @return boolean
+*/
+function ov_challenge_access_results_page() {
+  return TRUE;
+}
+
+/**
+* Responds with challenge results page
+* @param  string $uuid Challenge UUID
+* @return array        Page structure
+*/
+function ov_challenge_results_page($uuid) {
+  $content = [];
+  $challenge = ov_challenge_get_challenge_by_uuid($uuid);
+
+  if ($challenge) {
+    $title = _ov_challenge_get_node_title_by_content_id($challenge->content_id);
+    if ($title) {
+      drupal_set_title(drupal_get_title() . ': ' . $title);
+    }
+
+    $header = [t('Name'), t('Started'), t('Finished'), t('Points'), t('Maximum Points'), t('Tries'),];
+    $rows = [];
+
+    $result = db_select('ov_challenge_points', 'cp')
+    ->fields('cp')
+    ->condition('cp.id', $challenge->id)
+    ->execute();
+
+    if ($result) {
+      while($single = $result->fetchObject()) {
+        $rows[] = [
+          'data' => [
+            'name' => $single->name,
+            'started' => format_date($single->started, 'long'),
+            'finished' => $single->finished ? format_date($single->finished, 'long') : '',
+            'points' => isset($single->points) ? $single->points : '',
+            'max_points' => isset($single->max_points) ? $single->max_points : '',
+            'tries_count' => $single->tries_count,
+          ],
+        ];
+      }
+    }
+
+    $content['results-table'] = [
+      '#theme' => 'table',
+      '#rows' => $rows,
+      '#header' => $header,
+    ];
+  }
+
+  return $content;
+}
+
+/**
+* Implements hook_mail().
+*/
+function ov_challenge_mail($key, &$message, $params) {
+  switch($key) {
+    case 'new_challenge_created':
+    $message['from'] = 'no-reply@vara.e-koolikott.ee';
+    $message['subject'] = t('New Challenge created');
+    $message['body'][] = $params['body'];
+    break;
+    case 'challenge_ended':
+    $message['from'] = 'no-reply@vara.e-koolikott.ee';
+    $message['subject'] = t('Challenge ended');
+    $message['body'][] = $params['body'];
+    break;
+  }
+}
+
+/**
+* A con job that sends notifications ended challenges. It also marks the
+* field of notification to be sent so that it would only happen once.
+*/
+function _ov_challenge_notifications_cron() {
+  $result = db_select('ov_challenges', 'c')
+  ->fields('c')
+  ->condition('c.results_sent', 0)
+  ->condition('c.finished', time(), '<')
+  ->execute();
+
+  if ($result) {
+    while($challenge = $result->fetchObject()) {
+      $url = url('ov-challenge/results/' . $challenge->uuid, [
+        'absolute' => TRUE,
+      ]);
+      $message = t("One of your challenges has ended: @title.\nThe title of a resource for this challenge is: @ctitle.\n\nThe challege was active from @started to @finished.\n\nYou can access results at: @results\n\nThe results link would still be active for at least 36 hours after the challenge ends.\n\n\nBest regards,\nChallenge team.", [
+        '@title' => $challenge->title,
+        '@ctitle' => _ov_challenge_get_node_title_by_content_id($challenge->content_id),
+        '@started' => format_date($challenge->started, 'long'),
+        '@finished' => format_date($challenge->finished, 'long'),
+        '@results' => $url,
+      ]);
+      $params = [
+        'body' => check_markup($message, 'plain_text'),
+      ];
+      drupal_mail('ov_challenge', 'challenge_ended', $challenge->email, language_default(), $params);
+      db_update('ov_challenges')
+      ->fields([
+        'results_sent' => 1,
+      ])
+      ->condition('id', $challenge->id)
+      ->execute();
+    }
+  }
+}
+
+// TODO This needs to be checked
+// TODO It might make sense to use a subquery for the IN clause and a COUNT query to check if there is something to be deleted
+function _ov_challenge_cleanup_cron() {
+  $result = db_select('ov_challenges', 'c')
+  ->fields('c', ['id',])
+  ->condition('c.finished', time() - (36 * 60 * 60), '<')
+  ->execute()
+  ->fetchAll();
+
+  if ($result && is_array($result) && count($result) > 0) {
+    $ids = array_map(function($challenge) {
+      return $challenge->id;
+    }, $result);
+    db_delete('ov_challenge_points', 'cp')
+    ->condition('cp.id', 'IN')
+    ->execute();
+    db_delete('ov_challenges', 'c')
+    ->condition('c.finished', time() - (36 * 60 * 60), '<')
+    ->execute();
+  }
+}
+
+/**
+* Implements hook_cron().
+*/
+function ov_challenge_cron() {
+  // Make sure that frequency of running cron jobs is limited.
+  if (variable_get('ov_challenge_last_cron', 0) < time() - 3600) {
+    variable_set('ov_challenge_last_cron', time());
+    _ov_challenge_notifications_cron();
+    _ov_challenge_cleanup_cron();
+  }
+
+}

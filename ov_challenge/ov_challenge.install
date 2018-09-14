@@ -1,0 +1,148 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara Challenge install.
+ */
+
+function ov_challenge_schema() {
+  $schema['ov_challenges'] = [
+    'description' => 'Stores information about existing Challenges',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary Key: The unique identifier for this Challenge',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'content_id' => [
+        'description' => 'The unique identifier for h5p content',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'title' => [
+        'description' => 'Title of the Challenge',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'email' => [
+        'description' => 'Email of the teacher/creator',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'started' => [
+        'description' => 'Challenge start time',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'finished' => [
+        'description' => 'Challenge end time',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'code' => [
+        'description' => 'Challenge code used by players',
+        'type' => 'varchar',
+        'length' => 36,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'uuid' => [
+        'description' => 'Challenge UUID identifier',
+        'type' => 'char',
+        'length' => 36,
+        'not null' => TRUE,
+        'deault' => '',
+      ],
+      'results_sent' => [
+        'description' => 'Mark if results notification has already been sent',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'content_id_code' => ['content_id', 'code'],
+      'uuid' => ['uuid'],
+    ],
+    'indexes' => [
+      'content_id' => ['content_id'],
+      'started' => ['started'],
+      'finished' => ['finished'],
+      'code' => ['code'],
+      'results_sent' => ['results_sent'],
+    ],
+  ];
+  $schema['ov_challenge_points'] = [
+   'description' => 'Stores challenge player statistics',
+   'fields' => [
+     'id' => [
+       'description' => 'Primary Key: The unique identifier for Challenge',
+       'type' => 'int',
+       'unsigned' => TRUE,
+       'not null' => TRUE,
+     ],
+     'uuid' => [
+       'description' => 'Primary Key: The unique identifier for current user',
+       'type' => 'char',
+       'length' => 36,
+       'not null' => TRUE,
+       'default' => '',
+     ],
+     'name' => [
+       'description' => 'Player name',
+       'type' => 'varchar',
+       'length' => 255,
+       'not null' => TRUE,
+       'default' => '',
+     ],
+     'started' => [
+       'description' => 'When the player started on the interaction',
+       'type' => 'int',
+       'unsigned' => TRUE,
+       'not null' => TRUE,
+     ],
+     'finished' => [
+       'description' => 'When the player submitted the result',
+       'type' => 'int',
+       'unsigned' => TRUE,
+       'not null' => TRUE,
+       'default' => 0,
+     ],
+     'points' => [
+       'description' => 'The players score',
+       'type' => 'int',
+       'unsigned' => TRUE,
+       'not null' => FALSE,
+     ],
+     'max_points' => [
+       'description' => 'The maximum score for this test',
+       'type' => 'int',
+       'unsigned' => TRUE,
+       'not null' => FALSE,
+     ],
+     'tries_count' => [
+       'description' => 'The number of times exercise score was submitted',
+       'type' => 'int',
+       'size' => 'small',
+       'unsigned' => TRUE,
+       'not null' => TRUE,
+       'default' => 0,
+     ],
+   ],
+   'primary key' => ['id', 'uuid'],
+   'unique keys' => [
+     'uuid' => ['uuid'],
+   ],
+ ];
+  return $schema;
+}
