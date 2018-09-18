@@ -5,6 +5,9 @@
 * Drupal Oppevara Challenge module.
 */
 
+define('OV_CHALLENGE_RECAPTCHA_VERIFY_ENDPOINT', 'https://www.google.com/recaptcha/api/siteverify');
+define('OV_CHALLEGE_RECAPTCHA_API_ENDPOINT', 'https://www.google.com/recaptcha/api.js?render=');
+
 // XXX Add logic to remove challenges and results if content is deleted
 
 /**
@@ -187,6 +190,10 @@ function ov_challenge_h5p_scripts_alter(&$scripts, $libraries, $mode) {
     'version' => '',
   ];
   $scripts[] = (object) [
+    'path' => OV_CHALLEGE_RECAPTCHA_API_ENDPOINT . variable_get('ov_challenge_recaptcha_site_key', ''),
+    'version' => '',
+  ];
+  $scripts[] = (object) [
     'path' => drupal_get_path('module', 'ov_challenge') . '/js/ov_challenge.js',
     'version' => '',
   ];
@@ -228,6 +235,15 @@ function ov_challenge_menu() {
     'access callback' => 'ov_challenge_access_results_page',
     'type' => MENU_CALLBACK,
   ];
+  $items['admin/config/system/oppevara/challenge'] = [
+    'title' => 'Oppevara Challenge',
+    'description' => 'Configure challenge settings.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['ov_challenge_admin_settings'],
+    'access arguments' => ['administer site configuration'],
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'ov_challenge.admin.inc',
+  ];
 
   return $items;
 }
@@ -244,12 +260,11 @@ function ov_challenge_access_create_new() {
 * Callback for starting a new Challenge.
 */
 function ov_challenge_ajax_create_new() {
-  // TODO Consider some token validation
-  /*if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
-  return H5PCore::ajaxError(t('Invalid security token.'));
-}*/
+  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+    return H5PCore::ajaxError(t('Invalid security token.'));
+  }
 
-if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($_POST['email']) && is_numeric($_POST['duration'])) {
+if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($_POST['email']) && is_numeric($_POST['duration']) && is_string($_POST['g-recaptcha-response'])) {
   if (!valid_email_address($_POST['email'])) {
     return H5PCore::ajaxError(t('Provided email address is invalid.'));
   }
@@ -260,6 +275,30 @@ if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($
 
   if (!_ov_challenge_check_if_h5p_content_exists((int)$_POST['contentId'])) {
     return H5PCore::ajaxError();
+  }
+
+  // TODO See if this should be moved into a standalone function
+  $captchaResponse = drupal_http_request(OV_CHALLENGE_RECAPTCHA_VERIFY_ENDPOINT, [
+    'headers' => [
+      'Content-Type' => 'application/x-www-form-urlencoded',
+    ],
+    'method' => 'POST',
+    'data' => http_build_query([
+      'secret' => variable_get('ov_challenge_recaptcha_secret_key', ''),
+      'response' => $_POST['g-recaptcha-response'],
+      'remoteip' => ip_address(),
+    ]),
+  ]);
+
+  if ((int)$captchaResponse->code !== 200 || $captchaResponse->status_message !== 'OK') {
+    return H5PCore::ajaxError(t('Captcha service responded with an error.'));
+  }
+
+  $parsedResponse = json_decode($captchaResponse->data, true);
+  if ($parsedResponse['success'] !== true || $parsedResponse['action'] !== 'create_challenge') {
+    // TODO See if we should care about the score being too low
+    // It seems that 0.5 is the default value
+    return H5PCore::ajaxError(t('Wrong or unsuitable captcha.'));
   }
 
   $code = _ov_challenge_generate_unique_challenge_code((int)$_POST['contentId']);
@@ -316,7 +355,9 @@ function ov_challenge_access_start_playing() {
 * Callback for joining an existing challenge.
 */
 function ov_challenge_ajax_start_playing() {
-  // TODO Consider some token validation or other protective measures
+  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+    return H5PCore::ajaxError(t('Invalid security token.'));
+  }
 
   if (is_numeric($_POST['contentId']) && is_string($_POST['name']) && is_numeric($_POST['code'])) {
     $challenge = ov_challenge_get_challenge_by_content_id_and_code((int)$_POST['contentId'], $_POST['code']);
@@ -365,7 +406,9 @@ function ov_challenge_access_set_finished() {
 * Callback for finishing an existing challenge.
 */
 function ov_challenge_ajax_set_finished() {
-  // TODO Consider some token validation or other protective measure
+  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+    return H5PCore::ajaxError(t('Invalid security token.'));
+  }
 
   if (is_numeric($_POST['contentId']) && is_string($_POST['uuid']) && is_numeric($_POST['score']) && is_numeric($_POST['maxScore'])) {
     $points = ov_challenge_get_challenge_points_by_uuid($_POST['uuid']);
@@ -510,6 +553,7 @@ function _ov_challenge_notifications_cron() {
 // TODO This needs to be checked
 // TODO It might make sense to use a subquery for the IN clause and a COUNT query to check if there is something to be deleted
 function _ov_challenge_cleanup_cron() {
+  // XXX This does not seem to be functioning
   $result = db_select('ov_challenges', 'c')
   ->fields('c', ['id',])
   ->condition('c.finished', time() - (36 * 60 * 60), '<')

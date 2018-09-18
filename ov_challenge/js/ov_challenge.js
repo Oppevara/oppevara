@@ -192,13 +192,36 @@
       };
 
       /**
+       * Returns security token query string, extracted from H5PIntegration.ajax.setFinished
+       * @return {string} Query string with token data
+       */
+      self.getSecurityTokenQS = function() {
+        return H5PIntegration.ajax.setFinished.substring(H5PIntegration.ajax.setFinished.indexOf('?token='));
+      };
+
+      /**
+       * Extracts reCAPTCHA Site Key data from the URL of a loaded service script
+       * @return {string} Site Key or an empty string
+       */
+      self.getRecaptchaSiteKey = function() {
+        var script = H5P.jQuery('script[src^="https://www.google.com/recaptcha/api.js"]');
+
+        if (script.length > 0) {
+          var src = script.attr('src');
+          return src.substring(src.indexOf('?render=') + 8);
+        }
+
+        return '';
+      };
+
+      /**
        * Submits challenge score
        * @param  {int} score    Current score
        * @param  {int} maxScore Maximum score
        */
       self.setFinished = function(score, maxScore) {
         if ( self.isActiveParticipation()) {
-          H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/set-finished.json', {
+          H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/set-finished.json' + self.getSecurityTokenQS(), {
             contentId: instance.contentId,
             uuid: self.getChallengeUUID(),
             score: score,
@@ -357,7 +380,7 @@
                 return;
               }
 
-              H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/start-playing.json', {
+              H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/start-playing.json' + self.getSecurityTokenQS(), {
                 contentId: instance.contentId,
                 name: participantName,
                 code: challengeCode
@@ -420,41 +443,44 @@
                 self.enableButtons();
                 return;
               }
+              // XXX Recaptcha thrown errors in case keys are wrong
+              grecaptcha.execute(self.getRecaptchaSiteKey(), {action: 'create_challenge'}).then(function(token) {
+                H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/create-new.json' + self.getSecurityTokenQS(), {
+                  contentId: instance.contentId,
+                  title: challengeTitle,
+                  email: challengeEmail,
+                  duration: challengeDuration,
+                  'g-recaptcha-response': token
+                }, function(response) {
+                  self.enableButtons();
 
-              H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/create-new.json', {
-                contentId: instance.contentId,
-                title: challengeTitle,
-                email: challengeEmail,
-                duration: challengeDuration
-              }, function(response) {
-                self.enableButtons();
+                  $challenge.find('.challenge-code').remove();
+                  $challenge.find('.challenge-results-url').remove();
 
-                $challenge.find('.challenge-code').remove();
-                $challenge.find('.challenge-results-url').remove();
-
-                if (!response.success) {
-                  H5P.trigger(instance, 'resize');
-                  if (response.message) {
-                    alert(response.message);
-                  } else {
-                    alert(self.t('errorCoulNotStartNewChallenge'));
+                  if (!response.success) {
+                    H5P.trigger(instance, 'resize');
+                    if (response.message) {
+                      alert(response.message);
+                    } else {
+                      alert(self.t('errorCoulNotStartNewChallenge'));
+                    }
+                    return;
                   }
-                  return;
-                }
 
-                H5P.jQuery('<span/>', {
-                  class: 'challenge-code',
-                  text: response.data.code.substring(0, response.data.code.length / 2) + ' ' + response.data.code.substring(response.data.code.length / 2)
-                }).appendTo($tmpContainer);
-                H5P.jQuery('<span/>', {
-                  class: 'challenge-results-url',
-                  html: self.t('challengeUrl', {'@url': '<a href="' + response.data.url + '" target="_blank">' + response.data.url + '</a>'})
-                }).appendTo($tmpContainer);
-                H5P.trigger(instance, 'resize');
-              }).fail(function() {
-                self.enableButtons();
-                H5P.trigger(instance, 'resize');
-                alert(self.t('errorUnknown'));
+                  H5P.jQuery('<span/>', {
+                    class: 'challenge-code',
+                    text: response.data.code.substring(0, response.data.code.length / 2) + ' ' + response.data.code.substring(response.data.code.length / 2)
+                  }).appendTo($tmpContainer);
+                  H5P.jQuery('<span/>', {
+                    class: 'challenge-results-url',
+                    html: self.t('challengeUrl', {'@url': '<a href="' + response.data.url + '" target="_blank">' + response.data.url + '</a>'})
+                  }).appendTo($tmpContainer);
+                  H5P.trigger(instance, 'resize');
+                }).fail(function() {
+                  self.enableButtons();
+                  H5P.trigger(instance, 'resize');
+                  alert(self.t('errorUnknown'));
+                });
               });
             }
           }
