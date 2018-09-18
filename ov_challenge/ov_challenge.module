@@ -550,10 +550,11 @@ function _ov_challenge_notifications_cron() {
   }
 }
 
-// TODO This needs to be checked
-// TODO It might make sense to use a subquery for the IN clause and a COUNT query to check if there is something to be deleted
+/**
+ * A cron job that deletes all the challenges that have expired more than 36 hours ago.
+ */
 function _ov_challenge_cleanup_cron() {
-  // XXX This does not seem to be functioning
+  // TODO It might make sense to use a subquery for the IN clause and a COUNT query to check if there is something to be deleted
   $result = db_select('ov_challenges', 'c')
   ->fields('c', ['id',])
   ->condition('c.finished', time() - (36 * 60 * 60), '<')
@@ -564,11 +565,11 @@ function _ov_challenge_cleanup_cron() {
     $ids = array_map(function($challenge) {
       return $challenge->id;
     }, $result);
-    db_delete('ov_challenge_points', 'cp')
-    ->condition('cp.id', 'IN')
+    db_delete('ov_challenge_points')
+    ->condition('id', $ids, 'IN')
     ->execute();
-    db_delete('ov_challenges', 'c')
-    ->condition('c.finished', time() - (36 * 60 * 60), '<')
+    db_delete('ov_challenges')
+    ->condition('id', $ids, 'IN')
     ->execute();
   }
 }
