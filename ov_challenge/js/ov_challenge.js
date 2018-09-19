@@ -208,7 +208,12 @@
 
         if (script.length > 0) {
           var src = script.attr('src');
-          return src.substring(src.indexOf('sitekey=') + 8);
+          var sitekey = src.substring(src.indexOf('sitekey=') + 8);
+          if (sitekey.indexOf('&') !== -1) {
+            sitekey = sitekey.substring(0, sitekey.indexOf('&'));
+          }
+
+          return sitekey;
         }
 
         return '';
