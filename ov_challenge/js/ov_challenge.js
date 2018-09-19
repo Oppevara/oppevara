@@ -220,7 +220,7 @@
        * @param  {int} maxScore Maximum score
        */
       self.setFinished = function(score, maxScore) {
-        if ( self.isActiveParticipation()) {
+        if (self.isActiveParticipation()) {
           H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/set-finished.json' + self.getSecurityTokenQS(), {
             contentId: instance.contentId,
             uuid: self.getChallengeUUID(),
@@ -293,8 +293,10 @@
             };
 
             var timerHtml = '';
+            var showValue = false;
             H5P.jQuery.each(parts, function(key, value) {
-              if (value > 0) {
+              showValue = (showValue || value > 0) ? true : false;
+              if (showValue) {
                 timerHtml += (value < 10) ? '0' + value : value;
                 timerHtml += (key !== 'seconds') ? ':' : '';
               }
@@ -507,8 +509,11 @@
 
       H5P.on(instance, 'finish', function (event) {
         if (event.data !== undefined) {
-          // TODO Make sure that passed values are reliable
-          self.setFinished(event.data.score, event.data.maxScore);
+          // This check is taken from the H5P core implementation, just in case that matters
+          var validScore = typeof score === 'number' || score instanceof Number;
+          if (validScore) {
+            self.setFinished(event.data.score, event.data.maxScore);
+          }
         }
       });
 

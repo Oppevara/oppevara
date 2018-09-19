@@ -8,7 +8,7 @@
 define('OV_CHALLENGE_RECAPTCHA_VERIFY_ENDPOINT', 'https://www.google.com/recaptcha/api/siteverify');
 define('OV_CHALLEGE_RECAPTCHA_API_ENDPOINT', 'https://www.google.com/recaptcha/api.js?render=');
 
-// XXX Add logic to remove challenges and results if content is deleted
+// TODO It might make sense to add logic that would delete challenges and results for deleted nodes and/or revisions
 
 /**
 * UUID V4 generator
@@ -235,6 +235,13 @@ function ov_challenge_menu() {
     'access callback' => 'ov_challenge_access_results_page',
     'type' => MENU_CALLBACK,
   ];
+  $items['ov-challenge/results/%/csv'] = [
+    'title' => 'CSV',
+    'page callback' => 'ov_challenge_results_csv',
+    'page arguments' => [2],
+    'access callback' => 'ov_challenge_access_results_page',
+    'type' => MENU_CALLBACK,
+  ];
   $items['admin/config/system/oppevara/challenge'] = [
     'title' => 'Oppevara Challenge',
     'description' => 'Configure challenge settings.',
@@ -277,7 +284,6 @@ if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($
     return H5PCore::ajaxError();
   }
 
-  // TODO See if this should be moved into a standalone function
   $captchaResponse = drupal_http_request(OV_CHALLENGE_RECAPTCHA_VERIFY_ENDPOINT, [
     'headers' => [
       'Content-Type' => 'application/x-www-form-urlencoded',
@@ -330,7 +336,7 @@ if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($
       '@results' => $results,
     ]);
     $params = [
-      'body' => check_markup($message, 'plain_text'),
+      'body' => $message,
     ];
     drupal_mail('ov_challenge', 'new_challenge_created', $email, language_default(), $params);
 
@@ -485,6 +491,12 @@ function ov_challenge_results_page($uuid) {
       }
     }
 
+    $content['results-csv'] = [
+      '#type' => 'link',
+      '#title' => t('Download results as CSV'),
+      '#href' => 'ov-challenge/results/' . $challenge->uuid . '/csv',
+    ];
+
     $content['results-table'] = [
       '#theme' => 'table',
       '#rows' => $rows,
@@ -493,6 +505,44 @@ function ov_challenge_results_page($uuid) {
   }
 
   return $content;
+}
+
+/**
+ * Responds with results CSV or an empty page
+ * @param  string $uuid Challenge UUID
+ * @return void Either starts file download or displays an empty page
+ */
+function ov_challenge_results_csv($uuid) {
+  $challenge = ov_challenge_get_challenge_by_uuid($uuid);
+
+  if ($challenge) {
+    drupal_add_http_header('Content-Type', 'text/csv; utf-8');
+    drupal_add_http_header('Content-Disposition', 'attachment; filename = results.csv');
+
+    $fp = fopen('php://output', 'w');
+    fputcsv($fp, [t('Name'), t('Started'), t('Finished'), t('Points'), t('Maximum Points'), t('Tries'),]);
+    $result = db_select('ov_challenge_points', 'cp')
+    ->fields('cp')
+    ->condition('cp.id', $challenge->id)
+    ->execute();
+
+    if ($result) {
+      while($single = $result->fetchObject()) {
+        fputcsv($fp, [
+          'name' => $single->name,
+          'started' => format_date($single->started, 'long'),
+          'finished' => $single->finished ? format_date($single->finished, 'long') : '',
+          'points' => isset($single->points) ? $single->points : '',
+          'max_points' => isset($single->max_points) ? $single->max_points : '',
+          'tries_count' => $single->tries_count,
+        ]);
+      }
+    }
+
+    fclose($fp);
+  }
+
+  drupal_exit();
 }
 
 /**
@@ -529,15 +579,19 @@ function _ov_challenge_notifications_cron() {
       $url = url('ov-challenge/results/' . $challenge->uuid, [
         'absolute' => TRUE,
       ]);
-      $message = t("One of your challenges has ended: @title.\nThe title of a resource for this challenge is: @ctitle.\n\nThe challege was active from @started to @finished.\n\nYou can access results at: @results\n\nThe results link would still be active for at least 36 hours after the challenge ends.\n\n\nBest regards,\nChallenge team.", [
+      $csv = url('ov-challenge/results/' . $challenge->uuid . '/csv', [
+        'absolute' => TRUE,
+      ]);
+      $message = t("One of your challenges has ended: @title.\nThe title of a resource for this challenge is: @ctitle.\n\nThe challege was active from @started to @finished.\n\nYou can access results at: @results\nOr download the CSV file at: @csv\n\nThe results link would still be active for at least 36 hours after the challenge ends.\n\n\nBest regards,\nChallenge team.\n\n\n", [
         '@title' => $challenge->title,
         '@ctitle' => _ov_challenge_get_node_title_by_content_id($challenge->content_id),
         '@started' => format_date($challenge->started, 'long'),
         '@finished' => format_date($challenge->finished, 'long'),
         '@results' => $url,
+        '@csv' => $csv,
       ]);
       $params = [
-        'body' => check_markup($message, 'plain_text'),
+        'body' => $message,
       ];
       drupal_mail('ov_challenge', 'challenge_ended', $challenge->email, language_default(), $params);
       db_update('ov_challenges')
@@ -554,17 +608,13 @@ function _ov_challenge_notifications_cron() {
  * A cron job that deletes all the challenges that have expired more than 36 hours ago.
  */
 function _ov_challenge_cleanup_cron() {
-  // TODO It might make sense to use a subquery for the IN clause and a COUNT query to check if there is something to be deleted
-  $result = db_select('ov_challenges', 'c')
+  $ids = db_select('ov_challenges', 'c')
   ->fields('c', ['id',])
   ->condition('c.finished', time() - (36 * 60 * 60), '<')
   ->execute()
-  ->fetchAll();
+  ->fetchCol('id');
 
-  if ($result && is_array($result) && count($result) > 0) {
-    $ids = array_map(function($challenge) {
-      return $challenge->id;
-    }, $result);
+  if ($ids && is_array($ids) && count($ids) > 0) {
     db_delete('ov_challenge_points')
     ->condition('id', $ids, 'IN')
     ->execute();
@@ -584,5 +634,4 @@ function ov_challenge_cron() {
     _ov_challenge_notifications_cron();
     _ov_challenge_cleanup_cron();
   }
-
 }
