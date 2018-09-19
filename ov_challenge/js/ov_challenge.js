@@ -208,7 +208,7 @@
 
         if (script.length > 0) {
           var src = script.attr('src');
-          return src.substring(src.indexOf('?render=') + 8);
+          return src.substring(src.indexOf('sitekey=') + 8);
         }
 
         return '';
@@ -423,12 +423,16 @@
           return;
         }
 
+        var recaptchaResponse;
         var $tmpContainer = H5P.jQuery('<div/>', {
           class: 'start-new-challenge'
         });
         H5P.jQuery('<div class="row"><label>' + self.t('labelTitle') + ':</label><input type="text" value="" placeholder="' + self.t('placeholderTitle') + '" name="challenge-title"></div>').appendTo($tmpContainer);
         H5P.jQuery('<div class="row"><label>' + self.t('labelTeacherEmail') + ':</label><input type="email" value="" placeholder="' + self.t('placeholderEmail') + '" name="challenge-email"></div>').appendTo($tmpContainer);
         H5P.jQuery('<div class="row"><label>' + self.t('labelChallengeDuration') + ':</label><select name="challenge-duration"><option value="1">' + self.t('optionOneHour') + '</option><option value="2">' + self.t('optionTwoHours') + '</option><option value="24">' + self.t('optionOneDay') + '</option><option value="168">' + self.t('optionOneWeek') + '</option></select></div>').appendTo($tmpContainer);
+        H5P.jQuery('<div/>', {
+          id: 'recaptcha-' + instance.contentId
+        }).appendTo($tmpContainer);
         H5P.jQuery('<button/>', {
           class: 'h5p-joubelui-button',
           type: 'button',
@@ -441,48 +445,45 @@
               var challengeEmail = self.getInputValue('challenge-email', true, true);
               var challengeDuration = self.getInputValue('challenge-duration', true, true);
 
-              if (!(challengeTitle && challengeEmail && challengeDuration)) {
+              if (!(challengeTitle && challengeEmail && challengeDuration && recaptchaResponse)) {
                 self.enableButtons();
                 return;
               }
-              // XXX Recaptcha thrown errors in case keys are wrong
-              grecaptcha.execute(self.getRecaptchaSiteKey(), {action: 'create_challenge'}).then(function(token) {
-                H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/create-new.json' + self.getSecurityTokenQS(), {
-                  contentId: instance.contentId,
-                  title: challengeTitle,
-                  email: challengeEmail,
-                  duration: challengeDuration,
-                  'g-recaptcha-response': token
-                }, function(response) {
-                  self.enableButtons();
+              H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/create-new.json' + self.getSecurityTokenQS(), {
+                contentId: instance.contentId,
+                title: challengeTitle,
+                email: challengeEmail,
+                duration: challengeDuration,
+                'g-recaptcha-response': recaptchaResponse
+              }, function(response) {
+                self.enableButtons();
 
-                  $challenge.find('.challenge-code').remove();
-                  $challenge.find('.challenge-results-url').remove();
+                $challenge.find('.challenge-code').remove();
+                $challenge.find('.challenge-results-url').remove();
 
-                  if (!response.success) {
-                    H5P.trigger(instance, 'resize');
-                    if (response.message) {
-                      alert(response.message);
-                    } else {
-                      alert(self.t('errorCoulNotStartNewChallenge'));
-                    }
-                    return;
+                if (!response.success) {
+                  H5P.trigger(instance, 'resize');
+                  if (response.message) {
+                    alert(response.message);
+                  } else {
+                    alert(self.t('errorCoulNotStartNewChallenge'));
                   }
+                  return;
+                }
 
-                  H5P.jQuery('<span/>', {
-                    class: 'challenge-code',
-                    text: response.data.code.substring(0, response.data.code.length / 2) + ' ' + response.data.code.substring(response.data.code.length / 2)
-                  }).appendTo($tmpContainer);
-                  H5P.jQuery('<span/>', {
-                    class: 'challenge-results-url',
-                    html: self.t('challengeUrl', {'@url': '<a href="' + response.data.url + '" target="_blank">' + response.data.url + '</a>'})
-                  }).appendTo($tmpContainer);
-                  H5P.trigger(instance, 'resize');
-                }).fail(function() {
-                  self.enableButtons();
-                  H5P.trigger(instance, 'resize');
-                  alert(self.t('errorUnknown'));
-                });
+                H5P.jQuery('<span/>', {
+                  class: 'challenge-code',
+                  text: response.data.code.substring(0, response.data.code.length / 2) + ' ' + response.data.code.substring(response.data.code.length / 2)
+                }).appendTo($tmpContainer);
+                H5P.jQuery('<span/>', {
+                  class: 'challenge-results-url',
+                  html: self.t('challengeUrl', {'@url': '<a href="' + response.data.url + '" target="_blank">' + response.data.url + '</a>'})
+                }).appendTo($tmpContainer);
+                H5P.trigger(instance, 'resize');
+              }).fail(function() {
+                self.enableButtons();
+                H5P.trigger(instance, 'resize');
+                alert(self.t('errorUnknown'));
               });
             }
           }
@@ -490,6 +491,16 @@
         self.getBodyDOMElement().html('');
         $tmpContainer.appendTo(self.getBodyDOMElement());
         H5P.trigger(instance, 'resize');
+
+        grecaptcha.render('recaptcha-' + instance.contentId, {
+          sitekey : self.getRecaptchaSiteKey(),
+          callback: function(response) {
+            recaptchaResponse = response;
+          }
+        });
+        setTimeout(function() {
+          H5P.trigger(instance, 'resize');
+        }, 2000);
       });
 
       self.on('endChallenge', function() {
@@ -543,8 +554,8 @@
   H5P.jQuery('document').ready(function() {
     if (H5PIntegration) {
       H5PIntegration.l10n.OVC = {
-        challenge: 'Challenge',
-        challengeDescription: 'Create new challenges or take part in existing ones.',
+        challenge: 'Teadmistekontroll',
+        challengeDescription: 'Loo uus või osale käimasolevas.',
         headerChallenge: 'Teadmiste kontroll',
         buttonJoin: 'Liitu (õpilane)',
         buttonCreate: 'Loo (õpetaja)',

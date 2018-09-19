@@ -6,7 +6,7 @@
 */
 
 define('OV_CHALLENGE_RECAPTCHA_VERIFY_ENDPOINT', 'https://www.google.com/recaptcha/api/siteverify');
-define('OV_CHALLEGE_RECAPTCHA_API_ENDPOINT', 'https://www.google.com/recaptcha/api.js?render=');
+define('OV_CHALLEGE_RECAPTCHA_API_ENDPOINT', 'https://www.google.com/recaptcha/api.js');
 
 // TODO It might make sense to add logic that would delete challenges and results for deleted nodes and/or revisions
 
@@ -190,7 +190,7 @@ function ov_challenge_h5p_scripts_alter(&$scripts, $libraries, $mode) {
     'version' => '',
   ];
   $scripts[] = (object) [
-    'path' => OV_CHALLEGE_RECAPTCHA_API_ENDPOINT . variable_get('ov_challenge_recaptcha_site_key', ''),
+    'path' => OV_CHALLEGE_RECAPTCHA_API_ENDPOINT . '?render=explicit&hl=et&sitekey=' . variable_get('ov_challenge_recaptcha_site_key', ''),
     'version' => '',
   ];
   $scripts[] = (object) [
@@ -301,9 +301,7 @@ if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($
   }
 
   $parsedResponse = json_decode($captchaResponse->data, true);
-  if ($parsedResponse['success'] !== true || $parsedResponse['action'] !== 'create_challenge') {
-    // TODO See if we should care about the score being too low
-    // It seems that 0.5 is the default value
+  if ($parsedResponse['success'] !== true) {
     return H5PCore::ajaxError(t('Wrong or unsuitable captcha.'));
   }
 

@@ -14,7 +14,7 @@
 function ov_challenge_admin_settings($form, $form_state) {
   $form['recaptcha'] = [
     '#type' => 'fieldset',
-    '#title' => t('reCAPTCHA settings'),
+    '#title' => t('reCAPTCHA settings (V2 standard)'),
   ];
 
   $form['recaptcha']['ov_challenge_recaptcha_site_key'] = [
