@@ -85,6 +85,12 @@
   display: inline-block;
 }
 
+.challenge-container > .challenge-body > .explanation {
+  margin-bottom: 1em;
+  font-weight: bold;
+  color: #999;
+}
+
 .challenge-container .h5p-joubelui-button {
   margin-top: 5px;
 }

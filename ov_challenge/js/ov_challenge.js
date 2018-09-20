@@ -256,7 +256,11 @@
           var $challengeBody = self.getBodyDOMElement();
           self.disableButtons($challengeActions);
           H5P.jQuery('<div/>', {
-            text: self.t('textChallengeTitle', {'@title': challengeInfo.title}),
+            class: 'explanation',
+            text: self.t('textChallengeExplanation')
+          }).appendTo($challengeBody);
+          H5P.jQuery('<div/>', {
+            html: self.t('textChallengeTitle', {'@title': '<strong>' + challengeInfo.title + '</strong>'}),
           }).appendTo($challengeBody);
           H5P.jQuery('<div/>', {
             text: self.t('textChallengeStarted', {'@date': new Date(challengeInfo.started * 1000).toLocaleString()}),
@@ -270,7 +274,11 @@
             text: self.t('buttonFinish'),
             on: {
               click: function() {
-                self.trigger('endChallenge');
+                var confirmation = confirm(self.t('confirmEndChallenge'));
+
+                if (confirmation) {
+                  self.trigger('endChallenge');
+                }
               }
             }
           }).appendTo($challengeBody);
@@ -579,9 +587,11 @@
         optionTwoHours: 'Kaks tundi',
         optionOneDay: 'Üks päev',
         optionOneWeek: 'Üks nädal',
+        textChallengeExplanation: 'NB! Teadmistekontrolli vastused edastatakse automaatselt õpetajale peale seda, kui Sa oled vastanud kõigile küsimustele.',
         textChallengeTitle: 'Teadmiste kontroll: @title',
         textChallengeStarted: 'Teadmiste kontroll alanud: @date',
         textChallengeEnds: 'Teadmiste kontrolli lõpuni: @timer',
+        confirmEndChallenge: 'Kilkatas nupul "Lõpeta", loetakse Teadmistekontroll lõppenuks. Kui sa ei ole kõiki ülesandeid eelnevalt lõpetanud, ei saadeta Sinu tulemusi õpetajale.',
         errorCouldNotJoinTheChallenge: 'Midagi läks valesti! Ei saanud väljakutsega liituda.',
         errorCoulNotStartNewChallenge: 'Midagi läks valesti! Ei saanud uut väljakutset luua.',
         errorUnknown: 'Teenuse viga! Palun proovi uuesti või võta ühendust administraatoriga.',
