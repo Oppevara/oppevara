@@ -274,10 +274,10 @@
             text: self.t('buttonFinish'),
             on: {
               click: function() {
-                var confirmation = confirm(self.t('confirmEndChallenge'));
+                var email = prompt(self.t('confirmEndChallenge'), '');
 
-                if (confirmation) {
-                  self.trigger('endChallenge');
+                if (email != null) {
+                  self.trigger('endChallenge', {email: email});
                 }
               }
             }
@@ -479,7 +479,7 @@
                   if (response.message) {
                     alert(response.message);
                   } else {
-                    alert(self.t('errorCoulNotStartNewChallenge'));
+                    alert(self.t('errorCouldNotStartNewChallenge'));
                   }
                   return;
                 }
@@ -516,19 +516,91 @@
         }, 2000);
       });
 
-      self.on('endChallenge', function() {
+      self.on('endChallenge', function(e) {
         if (!self.isActiveParticipation()) {
           return;
         }
-        Cookies.remove('Drupal.visitor.ov-challenge-for-' + instance.contentId);
-        if (!self.isActiveParticipation()) {
-          self.enableButtons(self.getActionsDOMElement());
-          self.getBodyDOMElement().html('');
+
+        var email = (e.data && e.data.email) ? e.data.email.trim() : '';
+
+        // Use chose not to provide an email, no need to assign badges
+        if (!email) {
+          Cookies.remove('Drupal.visitor.ov-challenge-for-' + instance.contentId);
+          if (!self.isActiveParticipation()) {
+            self.enableButtons(self.getActionsDOMElement());
+            self.getBodyDOMElement().html('');
+            H5P.trigger(instance, 'resize');
+          }
+          if (countdownInterval) {
+            clearInterval(countdownInterval);
+          }
+          return;
+        }
+
+        self.disableButtons(self.getBodyDOMElement());
+        H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/end.json' + self.getSecurityTokenQS(), {
+          contentId: instance.contentId,
+          uuid: self.getChallengeUUID(),
+          email: email,
+        }, function(response) {
+          self.enableButtons(self.getBodyDOMElement());
+
+          if (!response.success) {
+            H5P.trigger(instance, 'resize');
+            if (response.message) {
+              alert(response.message);
+            } else {
+              alert(self.t('errorCouldNotEndChallenge'));
+            }
+            return;
+          }
+
+          if (!self.isActiveParticipation()) {
+            self.enableButtons(self.getActionsDOMElement());
+            self.getBodyDOMElement().html('');
+            if (response.data && response.data.badge) {
+              var $badge = H5P.jQuery('<div/>', {
+                'class': 'challenge-badge'
+              });
+              H5P.jQuery('<a/>', {
+                href: 'http://backpack.openbadges.org/baker?assertion=' + response.data.assertionUrl,
+                class: 'badge-image',
+                title: self.t('challengeBadgeImageTitle'),
+                target: '_blank',
+              }).appendTo($badge);
+              H5P.jQuery('<img/>', {
+                src: response.data.badge.image,
+                alt: 'badge-image',
+              }).appendTo($badge.find('.badge-image'));
+              H5P.jQuery('<div/>', {
+                class: 'badge-content'
+              }).appendTo($badge);
+              H5P.jQuery('<h4/>', {
+                class: 'badge-title',
+                text: response.data.badge.name,
+              }).appendTo($badge.find('.badge-content'));
+              H5P.jQuery('<p/>', {
+                class: 'badge-description',
+                text: response.data.badge.description
+              }).appendTo($badge.find('.badge-content'));
+              H5P.jQuery('<a/>', {
+                href: response.data.assertionUrl,
+                class: 'badge-assertion',
+                text: self.t('challengeBadgeAssertionUrl'),
+                target: '_blank'
+              }).appendTo($badge.find('.badge-content'));
+              $badge.appendTo(self.getBodyDOMElement());
+            }
+            H5P.trigger(instance, 'resize');
+          }
+          if (countdownInterval) {
+            clearInterval(countdownInterval);
+          }
+        }).fail(function() {
+          self.enableButtons(self.getBodyDOMElement());
           H5P.trigger(instance, 'resize');
-        }
-        if (countdownInterval) {
-          clearInterval(countdownInterval);
-        }
+          alert(self.t('errorUnknown'));
+        });
       });
 
       H5P.on(instance, 'finish', function (event) {
@@ -591,9 +663,12 @@
         textChallengeTitle: 'Teadmiste kontroll: @title',
         textChallengeStarted: 'Teadmiste kontroll alanud: @date',
         textChallengeEnds: 'Teadmiste kontrolli lõpuni: @timer',
-        confirmEndChallenge: 'Kilkatas nupul "Lõpeta", loetakse Teadmistekontroll lõppenuks. Kui sa ei ole kõiki ülesandeid eelnevalt lõpetanud, ei saadeta Sinu tulemusi õpetajale.',
+        confirmEndChallenge: 'Kilkatas nupul "Lõpeta", loetakse Teadmistekontroll lõppenuks. Kui sa ei ole kõiki ülesandeid eelnevalt lõpetanud, ei saadeta Sinu tulemusi õpetajale.\nNB! Sisestades e-posti aadressi, avanab võimalus Õpimärgi saamiseks. Jäta antud väli tühjaks kui sa seda ei soovi.',
+        challengeBadgeImageTitle: 'Lae alla Õpimärgi pilt, mille sees paikneb ka saavutuse kinnitus.',
+        challengeBadgeAssertionUrl: 'Vajuta Õpimärgi pilti et laadida see alla, pildi sees paikneb ka saavutuse kinnitus. Või vajuta siia et avada iseseisev kinnitus uues aknas.',
         errorCouldNotJoinTheChallenge: 'Midagi läks valesti! Ei saanud väljakutsega liituda.',
-        errorCoulNotStartNewChallenge: 'Midagi läks valesti! Ei saanud uut väljakutset luua.',
+        errorCouldNotStartNewChallenge: 'Midagi läks valesti! Ei saanud uut väljakutset luua.',
+        errorCouldNotEndChallenge: 'Midagi lälks valesti! Ei saanud väljakutset lõpetada.',
         errorUnknown: 'Teenuse viga! Palun proovi uuesti või võta ühendust administraatoriga.',
         successScoreSubmitted: 'Oled edukalt väljakutset lõpetanud. Nüüd saad kas proovida veel või vajutada lõpetamise nuppu.',
         challengeUrl: 'Viide tulemustele: @url'

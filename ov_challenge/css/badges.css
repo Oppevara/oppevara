@@ -1,0 +1,21 @@
+.content > .badge {
+  display: table-row;
+}
+
+.content > .badge > .badge-image,
+.content > .badge > .badge-content {
+  display: table-cell;
+}
+
+.content > .badge > .badge-content {
+  vertical-align: top;
+}
+
+.content > .badge > .badge-content > .badge-title {
+  font-weight: bold;
+  font-size: 150%;
+}
+
+.content > .badge > .badge-content > .badge-description {
+  font-size: 110%;
+}

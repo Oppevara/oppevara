@@ -94,3 +94,31 @@
 .challenge-container .h5p-joubelui-button {
   margin-top: 5px;
 }
+
+.challenge-container > .challenge-body > .challenge-badge {
+  display: table-row;
+}
+
+.challenge-container > .challenge-body > .challenge-badge > .badge-image,
+.challenge-container > .challenge-body > .challenge-badge > .badge-content {
+  display: table-cell;
+}
+
+.challenge-container > .challenge-body > .challenge-badge > .badge-content {
+  vertical-align: top;
+}
+
+.challenge-container > .challenge-body > .challenge-badge > .badge-content > .badge-title {
+  font-weight: bold;
+  color: #999;
+  font-size: 110%;
+}
+
+.challenge-container > .challenge-body > .challenge-badge .badge-content > .badge-description {
+  color: #999;
+}
+
+.challenge-container > .challenge-body > .challenge-badge .badge-content > .badge-assertion {
+  color: #999;
+  font-size: 95%;
+}
