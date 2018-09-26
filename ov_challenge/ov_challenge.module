@@ -245,14 +245,14 @@ function ov_challenge_get_badges() {
   return [
     'badge-done' => [
       'name' => 'Challenge Completed',
-      'description' => 'Challenge for content "@title" done with 51% of answers being correct.',
+      'description' => 'Challenge for content "@title" completed with 51% of answers being correct.',
       'image' => url(drupal_get_path('module', 'ov_challenge') . '/images/badges/badge-done.png', [
         'absolute' => TRUE,
       ]),
     ],
     'badge-gold' => [
       'name' => 'Challenge Completed Perfectly',
-      'description' => 'Challenge for content "@title" done with 91% of answers being correct.',
+      'description' => 'Challenge for content "@title" completed with 91% of answers being correct.',
       'image' => url(drupal_get_path('module', 'ov_challenge') . '/images/badges/badge-gold.png', [
         'absolute' => TRUE,
       ]),
