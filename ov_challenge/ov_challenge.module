@@ -8,6 +8,7 @@
 define('OV_CHALLENGE_RECAPTCHA_VERIFY_ENDPOINT', 'https://www.google.com/recaptcha/api/siteverify');
 define('OV_CHALLEGE_RECAPTCHA_API_ENDPOINT', 'https://www.google.com/recaptcha/api.js');
 define('OV_CHALLENGE_OPENBADGES_CONTEXT_URI', 'https://w3id.org/openbadges/v2');
+define('OV_CHALLENGE_EMAIL_FROM', 'no-reply@vara.e-koolikott.ee');
 
 // TODO It might make sense to add logic that would delete challenges and results for deleted nodes and/or revisions
 // TODO It might make sense to remove assertions when node and/or revision is being deleted
@@ -747,14 +748,18 @@ function ov_challenge_results_csv($uuid) {
 function ov_challenge_mail($key, &$message, $params) {
   switch($key) {
     case 'new_challenge_created':
-    $message['from'] = 'no-reply@vara.e-koolikott.ee';
+    $message['from'] = OV_CHALLENGE_EMAIL_FROM;
     $message['subject'] = t('New Challenge created');
     $message['body'][] = $params['body'];
+    $message['headers']['Sender'] = OV_CHALLENGE_EMAIL_FROM;
+    $message['headers']['From'] = OV_CHALLENGE_EMAIL_FROM;
     break;
     case 'challenge_ended':
-    $message['from'] = 'no-reply@vara.e-koolikott.ee';
+    $message['from'] = OV_CHALLENGE_EMAIL_FROM;
     $message['subject'] = t('Challenge ended');
     $message['body'][] = $params['body'];
+    $message['headers']['Sender'] = OV_CHALLENGE_EMAIL_FROM;
+    $message['headers']['From'] = OV_CHALLENGE_EMAIL_FROM;
     break;
   }
 }
