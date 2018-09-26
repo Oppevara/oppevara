@@ -592,6 +592,9 @@
               $badge.appendTo(self.getBodyDOMElement());
             }
             H5P.trigger(instance, 'resize');
+            setTimeout(function() {
+              H5P.trigger(instance, 'resize');
+            }, 2000);
           }
           if (countdownInterval) {
             clearInterval(countdownInterval);
