@@ -594,7 +594,7 @@
             H5P.trigger(instance, 'resize');
             setTimeout(function() {
               H5P.trigger(instance, 'resize');
-            }, 2000);
+            }, 500);
           }
           if (countdownInterval) {
             clearInterval(countdownInterval);
