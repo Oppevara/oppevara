@@ -102,7 +102,7 @@ function ov_analytics_send_to_lrs($action, $data) {
       ],
       'response' => [
         'code' => $response->code,
-        'status' => $response->status_message,
+        'status' => isset($response->status_message) ? $response->status_message : '',
         'error' => $response->error,
       ]
     ];
@@ -111,7 +111,7 @@ function ov_analytics_send_to_lrs($action, $data) {
     db_insert('ov_analytics_statements')
       ->fields([
         'code' => $response->code,
-        'status_message' => $response->status_message,
+        'status_message' => isset($response->status_message) ? $response->status_message : '',
         'error' => $response->error,
         'statement' => $jsonData,
         'created' => REQUEST_TIME,
@@ -131,7 +131,8 @@ function ov_analytics_xapi_endpoint_view() {
 
     if ( $response ) {
       if ( isset($response->error) ) {
-        drupal_add_http_header('Status', "$response->code $response->status_message");
+        $status_message = isset($response->status_message) ? $response->status_message : '';
+        drupal_add_http_header('Status', "$response->code $status_message");
       }
     } else if ( is_null($response) ) {
       drupal_add_http_header('Status', '403 Forbidden');
