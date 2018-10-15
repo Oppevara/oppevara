@@ -716,27 +716,7 @@ function ov_challenge_results_csv($uuid) {
     drupal_add_http_header('Content-Type', 'text/csv; utf-8');
     drupal_add_http_header('Content-Disposition', 'attachment; filename = results.csv');
 
-    $fp = fopen('php://output', 'w');
-    fputcsv($fp, [t('Name'), t('Started'), t('Finished'), t('Points'), t('Maximum Points'), t('Tries'),]);
-    $result = db_select('ov_challenge_points', 'cp')
-    ->fields('cp')
-    ->condition('cp.id', $challenge->id)
-    ->execute();
-
-    if ($result) {
-      while($single = $result->fetchObject()) {
-        fputcsv($fp, [
-          'name' => $single->name,
-          'started' => format_date($single->started, 'long'),
-          'finished' => $single->finished ? format_date($single->finished, 'long') : '',
-          'points' => isset($single->points) ? $single->points : '',
-          'max_points' => isset($single->max_points) ? $single->max_points : '',
-          'tries_count' => $single->tries_count,
-        ]);
-      }
-    }
-
-    fclose($fp);
+    print _ov_challenge_get_results_csv_contents($challenge);
   }
 
   drupal_exit();
@@ -760,8 +740,39 @@ function ov_challenge_mail($key, &$message, $params) {
     $message['body'][] = $params['body'];
     $message['headers']['Sender'] = OV_CHALLENGE_EMAIL_FROM;
     $message['headers']['From'] = OV_CHALLENGE_EMAIL_FROM;
+    if (isset($params['attachment'])) {
+      $message['params']['attachments'][] = $params['attachment'];
+    }
     break;
   }
+}
+
+function _ov_challenge_get_results_csv_contents(&$challenge) {
+  $fp = fopen('php://temp', 'w');
+  fputcsv($fp, [t('Name'), t('Started'), t('Finished'), t('Points'), t('Maximum Points'), t('Tries'),]);
+  $result = db_select('ov_challenge_points', 'cp')
+  ->fields('cp')
+  ->condition('cp.id', $challenge->id)
+  ->execute();
+
+  if ($result) {
+    while($single = $result->fetchObject()) {
+      fputcsv($fp, [
+        'name' => $single->name,
+        'started' => format_date($single->started, 'long'),
+        'finished' => $single->finished ? format_date($single->finished, 'long') : '',
+        'points' => isset($single->points) ? $single->points : '',
+        'max_points' => isset($single->max_points) ? $single->max_points : '',
+        'tries_count' => $single->tries_count,
+      ]);
+    }
+  }
+
+  rewind($fp);
+  $filecontent = stream_get_contents($fp);
+  fclose($fp);
+
+  return $filecontent;
 }
 
 /**
@@ -791,8 +802,14 @@ function _ov_challenge_notifications_cron() {
         '@results' => $url,
         '@csv' => $csv,
       ]);
+
       $params = [
         'body' => $message,
+        'attachment' => [
+          'filecontent' => _ov_challenge_get_results_csv_contents($challenge),
+          'filename' => 'results.csv',
+          'filemime' => 'text/csv',
+        ],
       ];
       drupal_mail('ov_challenge', 'challenge_ended', $challenge->email, language_default(), $params);
       db_update('ov_challenges')
