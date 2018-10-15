@@ -16,7 +16,7 @@ function ov_styles_h5p_styles_alter(&$styles, $libraries, $mode) {
     // Path relative to drupal root
     'path' => drupal_get_path('module', 'ov_styles') . '/css/ov_h5p_overrides.css',
     // Cache buster
-    'version' => '?ver=2',
+    'version' => '?ver=3',
   );
 }
 
