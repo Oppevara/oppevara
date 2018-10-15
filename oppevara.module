@@ -4,3 +4,15 @@
  * @file
  * Drupal oppevara main module.
  */
+
+ /**
+  * Implements hook_h5p_scripts_alter().
+  */
+ function oppevara_h5p_scripts_alter(&$scripts, $libraries, $mode) {
+   if ( $mode === 'external' ) {
+     $scripts[] = (object) [
+       'path' => drupal_get_path('module', 'oppevara') . '/js/donors-data.js',
+       'version' => '',
+     ];
+   }
+ }

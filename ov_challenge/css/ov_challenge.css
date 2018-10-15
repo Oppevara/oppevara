@@ -1,0 +1,130 @@
+.h5p-actions > .h5p-button.h5p-challenge:before {
+  content: '\e904';
+}
+
+.challenge-container {
+  margin: 10px;
+  border: 2px solid #89b4e4;
+}
+
+.challenge-container > .challenge-header {
+  background: #89b4e4;
+}
+
+.challenge-container > .challenge-header > label {
+  color: #ffffff;
+  padding-left: 0.5em;
+}
+
+.challenge-container > .challenge-actions {
+  padding-top: 0.5em;
+  text-align: center;
+}
+
+.challenge-container > .challenge-body {
+  padding: 0.5em;
+}
+
+.challenge-container > .challenge-body > .start-new-challenge,
+.challenge-container > .challenge-body > .join-existing-challenge {
+  /*display: table;*/
+}
+
+.challenge-container > .challenge-body > .start-new-challenge > div.row,
+.challenge-container > .challenge-body > .join-existing-challenge > div.row {
+  display: table-row;
+}
+
+.challenge-container > .challenge-body > .start-new-challenge > div.row > label,
+.challenge-container > .challenge-body > .start-new-challenge > div.row > input,
+.challenge-container > .challenge-body > .start-new-challenge > div.row > select,
+.challenge-container > .challenge-body > .join-existing-challenge > div.row > label,
+.challenge-container > .challenge-body > .join-existing-challenge > div.row > input {
+  display: table-cell;
+}
+
+.challenge-container > .challenge-body > .start-new-challenge > div.row > input,
+.challenge-container > .challenge-body > .start-new-challenge > div.row > select,
+.challenge-container > .challenge-body > .join-existing-challenge > div.row > input {
+  margin-left: 0.5em;
+  min-width: 200px;
+}
+
+.challenge-container > .challenge-body > .start-new-challenge > div.row > input.missing-required-value,
+.challenge-container > .challenge-body > .start-new-challenge > div.row > select.missing-required-value,
+.challenge-container > .challenge-body > .join-existing-challenge > div.row > input.missing-required-value {
+  background-color: #f7d0d0;
+  border: 1px solid #f7d0d0;
+  color: #b71c1c;
+}
+
+.challenge-container > .challenge-body > .start-new-challenge > .challenge-code {
+  display: block;
+  font-size: 250%;
+  font-weight: bold;
+  margin-top: 25px;
+}
+
+.challenge-container > .challenge-body > .start-new-challenge > .challenge-results-url {
+  display: block;
+  margin-top: 25px;
+}
+
+.challenge-container button.h5p-joubelui-button:disabled {
+  opacity: 0.5;
+}
+
+.challenge-container > .challenge-body label {
+  display: inline-block;
+  font-weight: bold;
+}
+
+.challenge-container > .challenge-body input {
+  margin: 2px 0;
+  padding: 4px;
+  display: inline-block;
+}
+
+.challenge-container > .challenge-body > .explanation {
+  margin-bottom: 1em;
+  font-weight: bold;
+  color: #999;
+}
+
+.challenge-container .h5p-joubelui-button {
+  margin-top: 5px;
+}
+
+.challenge-container > .challenge-body > .challenge-badge {
+  display: table-row;
+}
+
+.challenge-container > .challenge-body > .challenge-badge > .badge-image,
+.challenge-container > .challenge-body > .challenge-badge > .badge-content {
+  display: table-cell;
+}
+
+.challenge-container > .challenge-body > .challenge-badge > .badge-content {
+  vertical-align: top;
+}
+
+.challenge-container > .challenge-body > .challenge-badge > .badge-content > .badge-title {
+  font-weight: bold;
+  color: #999;
+  font-size: 110%;
+}
+
+.challenge-container > .challenge-body > .challenge-badge .badge-content > .badge-description {
+  color: #999;
+}
+
+.challenge-container > .challenge-body > .challenge-badge .badge-content > .badge-assertion {
+  color: #999;
+  font-size: 95%;
+}
+
+.h5p-content ul.h5p-actions {
+    box-sizing: content-box;
+    height: auto;
+    display: flow-root;
+}
