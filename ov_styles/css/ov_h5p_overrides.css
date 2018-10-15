@@ -19,3 +19,7 @@ h4 {
 .h5p-course-presentation p:last-child {
 	margin-bottom:1em;
 }
+
+span.mjx-chtml.MJXc-display {
+    display: inline-block;
+}
