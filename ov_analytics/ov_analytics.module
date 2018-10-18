@@ -2,10 +2,11 @@
 
 /**
  * @file
- * Drupal Oppevara Analytics mdule.
+ * Drupal Oppevara Analytics module.
  */
 
 define('OV_ANALYTICS_XAPI_ENDPOINT', 'ajax/ov_analytics/xapi');
+define('OV_ANALYTICS_BATCH_SIZE', 100);
 
 /**
  * Implements hook_js_alter().
@@ -98,7 +99,7 @@ function ov_analytics_send_to_lrs($action, $data) {
     $debug = [
       'request' => [
         'url' => $url,
-        'data' => $data,
+        'count' => is_array($data) ? sizeof($data) : 1,
       ],
       'response' => [
         'code' => $response->code,
@@ -113,7 +114,8 @@ function ov_analytics_send_to_lrs($action, $data) {
         'code' => $response->code,
         'status_message' => isset($response->status_message) ? $response->status_message : '',
         'error' => $response->error,
-        'statement' => $jsonData,
+        'count' => is_array($data) ? sizeof($data) : 1,
+        'data' => $jsonData,
         'created' => REQUEST_TIME,
       ])->execute();
   }
@@ -126,18 +128,83 @@ function ov_analytics_send_to_lrs($action, $data) {
  */
 function ov_analytics_xapi_endpoint_view() {
   if ( isset($_POST['statement']) ) {
+    // TODO See if it would make sense to check for json errors
     $data = json_decode($_POST['statement'], TRUE);
-    $response = ov_analytics_send_to_lrs('statements', $data);
 
-    if ( $response ) {
-      if ( isset($response->error) ) {
-        $status_message = isset($response->status_message) ? $response->status_message : '';
-        drupal_add_http_header('Status', "$response->code $status_message");
-      }
-    } else if ( is_null($response) ) {
-      drupal_add_http_header('Status', '403 Forbidden');
+    if (!$data) {
+      drupal_add_http_header('Status', '400 Bad Request');
+      return;
+    }
+
+    try {
+      $queue = DrupalQueue::get('ov_analytics_statements');
+      $queue->createQueue();
+      $queue->createItem($data);
+    } catch (Exception $e) {
+      watchdog('ov_analytics', $e->getTraceAsString(), [], WATCHDOG_ERROR);
+      drupal_add_http_header('Status', '500 Internal Server Error');
     }
   } else {
     drupal_add_http_header('Status', '400 Bad Request');
   }
+}
+
+/**
+ * Processes statements queue and creates batches to be sent to LRS.
+ * Batches are added into another queue.
+ * @return void
+ */
+function _ov_analytics_process_statements_cron() {
+  $statementsQueue = DrupalQueue::get('ov_analytics_statements');
+  $statementsQueue->createQueue();
+
+  if ($statementsQueue->numberOfItems() > 0) {
+    $batchesQueue = DrupalQueue::get('ov_analytics_batches');
+    $batchesQueue->createQueue();
+
+    $totalBatches = ceil($statementsQueue->numberOfItems() / OV_ANALYTICS_BATCH_SIZE);
+
+    foreach (range(1, $totalBatches) as $batch) {
+      $statements = [];
+      while((sizeof($statements) < OV_ANALYTICS_BATCH_SIZE) && ($item = $statementsQueue->claimItem())) {
+        $statements[] = $item->data;
+        $statementsQueue->deleteItem($item);
+      }
+      $batchesQueue->createItem($statements);
+    }
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function ov_analytics_cron() {
+  _ov_analytics_process_statements_cron();
+}
+
+/**
+ * Batch queue worker callback.
+ * @param  array $data Statements data
+ * @return void
+ */
+function _ov_analytics_process_batch($data) {
+  $response = ov_analytics_send_to_lrs('statements', $data);
+  // TODO See if it would make sense to release the batch if sending fails
+  /*if ( isset($response->error) || is_null($response) ) {
+    throw new Exception('xAPI call failed!');
+  }*/
+}
+
+/**
+ * Implements hook_cron_queue_info()
+ * @return array Defined cron queue workers
+ */
+function ov_analytics_cron_queue_info() {
+  $queues = [];
+  $queues['ov_analytics_batches'] = [
+    'worker callback' => '_ov_analytics_process_batch',
+    'time' => 20 * 60, // Maximum amount of time allowed for the process to handle the queue
+  ];
+
+  return $queues;
 }

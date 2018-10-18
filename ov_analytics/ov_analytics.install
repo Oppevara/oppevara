@@ -42,22 +42,32 @@ function ov_analytics_schema() {
         'default' => '',
         'description' => 'Error message.',
       ],
-      'statement' => [
+      'count' => [
+        'type' => 'int',
+        'size' => 'small',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 1,
+        'description' => 'Number of statements.',
+      ],
+      'data' => [
         'type' => 'text',
         'size' => 'big',
         'not null' => TRUE,
-        'description' => 'JSON-encoded statement.',
+        'description' => 'JSON-encoded statement or an array of statements.',
       ],
       'created' => [
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
-        'description' => 'Creation timestamp.'
+        'description' => 'Creation timestamp.',
       ],
     ],
     'indexes' => [
       'code' => ['code'],
+      'error' => ['error'],
+      'count' => ['count'],
       'created_timestamp' => ['created'],
     ],
   ];
@@ -70,4 +80,35 @@ function ov_analytics_schema() {
  */
 function ov_analytics_update_7100() {
   drupal_install_schema('ov_analytics');
+}
+
+/**
+ * Add 'count' field and rename 'statement' file to 'data', also add index for 'error'
+ */
+function ov_analytics_update_7101() {
+  if (!db_field_exists('ov_analytics_statements', 'count')) {
+    db_add_field('ov_analytics_statements', 'count', [
+      'type' => 'int',
+      'size' => 'small',
+      'unsigned' => TRUE,
+      'not null' => TRUE,
+      'default' => 1,
+      'description' => 'Number of statements.',
+    ], [
+      'indexes' => [
+        'count' => ['count'],
+      ],
+    ]);
+  }
+  if (db_field_exists('ov_analytics_statements', 'statement')) {
+    db_change_field('ov_analytics_statements', 'statement', 'data', [
+      'type' => 'text',
+      'size' => 'big',
+      'not null' => TRUE,
+      'description' => 'JSON-encoded statement or an array of statements.',
+    ]);
+  }
+  if (!db_index_exists('ov_analytics_statements', 'error')) {
+    db_add_index('ov_analytics_statements', 'error', ['error']);
+  }
 }
