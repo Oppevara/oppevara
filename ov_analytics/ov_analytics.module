@@ -136,6 +136,10 @@ function ov_analytics_xapi_endpoint_view() {
       return;
     }
 
+    // Set timestamp as browser side one is unreliable and statement storage in
+    // LRS will involve a delay
+    $data['timestamp'] = date(DATE_RFC3339);
+
     try {
       $queue = DrupalQueue::get('ov_analytics_statements');
       $queue->createQueue();

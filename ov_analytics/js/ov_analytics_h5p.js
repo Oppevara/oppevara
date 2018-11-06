@@ -5,12 +5,8 @@
       {
         var moduleSettings = settings.ovAnalytics;
         H5P.externalDispatcher.on('xAPI', function (event) {
-          var statement = event.data.statement;
-          if (!statement.hasOwnProperty('timestamp')) {
-            statement.timestamp = (new Date()).toISOString();
-          }
           $.post(moduleSettings.endpointUrl, {
-            statement: JSON.stringify(statement)
+            statement: JSON.stringify(event.data.statement)
           });
         });
       }
