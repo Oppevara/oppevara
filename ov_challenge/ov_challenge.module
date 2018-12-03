@@ -601,7 +601,7 @@ function ov_challenge_ajax_end() {
         if ($points->points && $points->max_points) {
           $percentage = round($points->points / $points->max_points * 100, 0);
 
-          $awardedBadgeId;
+          $awardedBadgeId = '';
           if ($percentage >= 91) {
             $awardedBadgeId = 'badge-gold';
           } else if ($percentage >= 51) {
