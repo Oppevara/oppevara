@@ -102,6 +102,13 @@ function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
         'version' => ''
       );
     }
+
+    if(isset($libraries['H5P.ImageHotspots']) && $libraries['H5P.ImageHotspots']['majorVersion'] == "1" && $libraries['H5P.ImageHotspots']['minorVersion'] <= "7"){
+      $scripts[] = (object) array(
+          'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-image-hotspots-override.js',
+          'version' => ''
+      );
+    }
   }
 }
 
