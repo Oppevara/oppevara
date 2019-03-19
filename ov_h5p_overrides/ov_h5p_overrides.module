@@ -110,6 +110,14 @@ function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
       );
     }
   }
+
+  if($mode == "iframe" || $mode = "external"){
+      $scripts[] = (object) array(
+          'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-base-target-override.js',
+          'version' => ''
+      );
+
+  }
 }
 
 
