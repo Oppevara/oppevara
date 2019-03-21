@@ -23,3 +23,10 @@ h4 {
 span.mjx-chtml.MJXc-display {
     display: inline-block;
 }
+
+.h5p-column-content.h5p-image > img {
+    height: auto !important;
+    width: auto !important;
+    margin: 0 auto; /* center image in column */
+    /*max-height: 95vh;*/ /* this rule is set with jquery to document head */
+}
