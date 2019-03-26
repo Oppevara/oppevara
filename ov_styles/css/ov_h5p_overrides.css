@@ -30,3 +30,7 @@ span.mjx-chtml.MJXc-display {
     margin: 0 auto; /* center image in column */
     /*max-height: 95vh;*/ /* this rule is set with jquery to document head */
 }
+
+.h5p-memory-game .h5p-row-break {
+    clear: none;
+}
