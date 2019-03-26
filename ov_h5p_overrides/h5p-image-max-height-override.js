@@ -18,6 +18,7 @@
         clearTimeout(resizeTimer);
         resizeTimer = setTimeout(function() {
             setMaxDimensions();
+            H5P.trigger(H5P.instances[0], 'resize');
         }, 100);
     });
 })(H5P.jQuery);
