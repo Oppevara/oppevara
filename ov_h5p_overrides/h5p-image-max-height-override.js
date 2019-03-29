@@ -11,7 +11,7 @@
         try {
             vh = window.top.innerHeight - 50; // height of the parent frame (viewport) minus a little padding for possible menus etc.
         } catch(e){
-            vh = window.outerHeight - 150;
+            vh = window.outerHeight - 200;
         }
 
         var vw = window.innerWidth; // width of the iframe iself
