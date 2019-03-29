@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara April Fools module. Just for fun :)
+ */
+
+
+
+function ov_april_fools_h5p_scripts_alter(&$scripts, $libraries, $mode) {
+    $isActive = false;
+
+    $activationVar = variable_get('ov_april_fools_activation');
+    if($activationVar == 'always'){
+        $isActive = true;
+    } elseif ($activationVar == 'april1st'){
+        if(date("m") == 4 && date("d") == 1){
+            $isActive = true;
+        }
+    }
+
+    if($isActive){
+        if($mode == "iframe" || $mode = "external"){
+            $scripts[] = (object) array(
+                'path' => drupal_get_path('module', 'ov_april_fools') . '/ov-april-fools.js',
+                'version' => ''
+            );
+        }
+    }
+}
+
+
+
+/*
+ * Configuration menu
+ */
+function ov_april_fools_menu() {
+    $items = array();
+
+    $items['admin/config/system/oppevara/april_fools'] = array(
+        'title' => 'April Fools prank activation rule',
+        'description' => 'Configuration for OV April Fools module',
+        'page callback' => 'drupal_get_form',
+        'page arguments' => array('ov_april_fools_form'),
+        'access arguments' => array('administer site configuration'),
+        'type' => MENU_NORMAL_ITEM,
+    );
+
+    return $items;
+}
+
+
+function ov_april_fools_form($form, &$form_state) {
+    $form['ov_april_fools_activation'] = array(
+        '#type' => 'radios',
+        '#title' => t('Activation rule'),
+        '#description' => t('Select when you want this module to be active. Date is calculated server-side.'),
+        '#default_value' => variable_get('ov_april_fools_activation', 'disable'),
+        '#options' => array('always'=>t('Always active'),'april1st'=>t('Only active on 1st of April'),'disable'=>t('Disabled')),
+    );
+
+    return system_settings_form($form);
+}

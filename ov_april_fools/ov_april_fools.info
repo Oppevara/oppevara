@@ -1,0 +1,7 @@
+name = Digiõppevara April Fools Prank
+description = Messes with elements in H5P columns, only use when you dare.
+package = Oppevara
+core = 7.x
+configure = admin/config/system/oppevara/april_fools
+
+dependencies[] = oppevara
