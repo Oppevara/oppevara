@@ -7,7 +7,13 @@
 
     setMaxDimensions();
     function setMaxDimensions(){
-        var vh = window.top.innerHeight - 50; // height of the parent frame (viewport) minus a little padding for possible menus etc.
+        var vh;
+        try {
+            vh = window.top.innerHeight - 50; // height of the parent frame (viewport) minus a little padding for possible menus etc.
+        } catch(e){
+            vh = window.outerHeight - 150;
+        }
+
         var vw = window.innerWidth; // width of the iframe iself
 
         $('#h5pImageMaxDimensions').text(h5pImgSelector + ' {max-height: ' + vh + 'px; max-width: ' + vw +'px; }');
