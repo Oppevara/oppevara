@@ -440,6 +440,10 @@
         var $tmpContainer = H5P.jQuery('<div/>', {
           class: 'start-new-challenge'
         });
+        H5P.jQuery('<div>', {
+          class: 'check-hint-text',
+          text: self.t('textCheckHint')
+        }).appendTo($tmpContainer);
         H5P.jQuery('<div class="row"><label>' + self.t('labelTitle') + ':</label><input type="text" value="" placeholder="' + self.t('placeholderTitle') + '" name="challenge-title"></div>').appendTo($tmpContainer);
         H5P.jQuery('<div class="row"><label>' + self.t('labelTeacherEmail') + ':</label><input type="email" value="" placeholder="' + self.t('placeholderEmail') + '" name="challenge-email"></div>').appendTo($tmpContainer);
         H5P.jQuery('<div class="row"><label>' + self.t('labelChallengeDuration') + ':</label><select name="challenge-duration"><option value="1">' + self.t('optionOneHour') + '</option><option value="2">' + self.t('optionTwoHours') + '</option><option value="24">' + self.t('optionOneDay') + '</option><option value="168">' + self.t('optionOneWeek') + '</option></select></div>').appendTo($tmpContainer);
@@ -674,7 +678,8 @@
         errorCouldNotEndChallenge: 'Midagi lälks valesti! Ei saanud väljakutset lõpetada.',
         errorUnknown: 'Teenuse viga! Palun proovi uuesti või võta ühendust administraatoriga.',
         successScoreSubmitted: 'Oled edukalt väljakutset lõpetanud. Nüüd saad kas proovida veel või vajutada lõpetamise nuppu.',
-        challengeUrl: 'Viide tulemustele: @url'
+        challengeUrl: 'Viide tulemustele: @url',
+        textCheckHint: 'Palume alati eelnevalt kontrollida, kas antud materjali puhul Teadmistekontroll oskab sooritajale tulemusi salvestada ja saata. Kontrollimiseks läbige Teadmistekontroll.'
       };
     }
     if (H5P.instances && H5P.instances.length > 0) {
