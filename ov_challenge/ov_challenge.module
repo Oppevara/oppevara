@@ -548,15 +548,29 @@ function ov_challenge_ajax_set_finished() {
       $challenge = ov_challenge_get_challenge_by_id($points->id);
 
       if ($challenge && ov_challenge_is_active_challenge($challenge)) {
+        $finished_time = time();
+
         db_update('ov_challenge_points')
         ->fields([
-          'finished' => time(),
+          'finished' => $finished_time,
           'points' => $_POST['score'],
           'max_points' => $_POST['maxScore'],
         ])
         ->expression('tries_count', 'tries_count + :amount', [':amount' => 1,])
         ->condition('uuid', $_POST['uuid'])
         ->execute();
+
+        // Update cookie contents to indicate that score has been stored
+        $cname = 'Drupal_visitor_ov-challenge-for-' . (int)$_POST['contentId'];
+        if (isset($_COOKIE[$cname])) {
+          $data = json_decode($_COOKIE[$cname], true);
+          $data['finished'] = [
+            'finished' => $finished_time,
+            'score' => $_POST['score'],
+            'maxScore' => $_POST['maxScore'],
+          ];
+          user_cookie_save(['ov-challenge-for-' . (int)$_POST['contentId'] => json_encode($data),]);
+        }
 
         return H5PCore::ajaxSuccess();
       } else if ($challenge) {

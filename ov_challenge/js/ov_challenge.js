@@ -192,6 +192,20 @@
       };
 
       /**
+       * Checks if the challenge is finished (score stored)
+       * @return {boolean} [description]
+       */
+      self.hasFinishedChallenge = function() {
+        var cookieData = Cookies.getJSON('Drupal.visitor.ov-challenge-for-' + instance.contentId);
+
+        if (cookieData) {
+          return !!cookieData.finished;
+        }
+
+        return false;
+      };
+
+      /**
        * Returns security token query string, extracted from H5PIntegration.ajax.setFinished
        * @return {string} Query string with token data
        */
@@ -223,8 +237,9 @@
        * Submits challenge score
        * @param  {int} score    Current score
        * @param  {int} maxScore Maximum score
+       * @param  {function} cb  Callback function
        */
-      self.setFinished = function(score, maxScore) {
+      self.setFinished = function(score, maxScore, cb) {
         if (self.isActiveParticipation()) {
           H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/set-finished.json' + self.getSecurityTokenQS(), {
             contentId: instance.contentId,
@@ -242,6 +257,10 @@
             }
           }).fail(function(response) {
             alert(self.t('errorUnknown'));
+          }).done(function() {
+            if (cb && typeof cb === 'function') {
+              cb();
+            }
           });
         }
       };
@@ -274,10 +293,18 @@
             text: self.t('buttonFinish'),
             on: {
               click: function() {
+                var finished = self.hasFinishedChallenge();
                 var email = prompt(self.t('confirmEndChallenge'), '');
 
                 if (email != null) {
-                  self.trigger('endChallenge', {email: email});
+                  if (instance.getScore && typeof instance.getScore === 'function' && instance.getMaxScore && typeof instance.getMaxScore === 'function' && !finished) {
+                    self.disableButtons(self.getBodyDOMElement());
+                    self.setFinished(instance.getScore(), instance.getMaxScore(), function() {
+                      self.trigger('endChallenge', {email: email});
+                    });
+                  } else {
+                    self.trigger('endChallenge', {email: email});
+                  }
                 }
               }
             }
