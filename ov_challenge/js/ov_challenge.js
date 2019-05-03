@@ -235,12 +235,15 @@
 
       /**
        * Submits challenge score
-       * @param  {int} score    Current score
-       * @param  {int} maxScore Maximum score
-       * @param  {function} cb  Callback function
+       * @param  {int}      score                Current score
+       * @param  {int}      maxScore             Maximum score
+       * @param  {function} cb                   Callback function
+       * @param  {boolean}  preventSuccessAlerts Prevent any success alert from being triggered
        */
-      self.setFinished = function(score, maxScore, cb) {
+      self.setFinished = function(score, maxScore, cb, preventSuccessAlerts) {
         if (self.isActiveParticipation()) {
+          preventSuccessAlerts = !!preventSuccessAlerts;
+
           H5P.jQuery.post(H5PIntegration.baseUrl + '/ov-challenge-ajax/set-finished.json' + self.getSecurityTokenQS(), {
             contentId: instance.contentId,
             uuid: self.getChallengeUUID(),
@@ -252,7 +255,7 @@
                 alert(response.message);
               }
               return;
-            } else {
+            } else if (!preventSuccessAlerts) {
               alert(self.t('successScoreSubmitted'));
             }
           }).fail(function(response) {
@@ -293,15 +296,17 @@
             text: self.t('buttonFinish'),
             on: {
               click: function() {
-                var finished = self.hasFinishedChallenge();
-                var email = prompt(self.t('confirmEndChallenge'), '');
+                var isFinished = self.hasFinishedChallenge();
+                var canGetScore = instance.getScore && typeof instance.getScore === 'function' && instance.getMaxScore && typeof instance.getMaxScore === 'function';
+                var promptText = canGetScore ? 'confirmEndChallengeCanGetScore' : 'confirmEndChallenge';
+                var email = prompt(self.t(promptText), '');
 
                 if (email != null) {
-                  if (instance.getScore && typeof instance.getScore === 'function' && instance.getMaxScore && typeof instance.getMaxScore === 'function' && !finished) {
+                  if (canGetScore && !isFinished) {
                     self.disableButtons(self.getBodyDOMElement());
                     self.setFinished(instance.getScore(), instance.getMaxScore(), function() {
                       self.trigger('endChallenge', {email: email});
-                    });
+                    }, true);
                   } else {
                     self.trigger('endChallenge', {email: email});
                   }
@@ -697,7 +702,8 @@
         textChallengeTitle: 'Teadmiste kontroll: @title',
         textChallengeStarted: 'Teadmiste kontroll alanud: @date',
         textChallengeEnds: 'Teadmiste kontrolli lõpuni: @timer',
-        confirmEndChallenge: 'Kilkatas nupul "Lõpeta", loetakse Teadmistekontroll lõppenuks. Kui sa ei ole kõiki ülesandeid eelnevalt lõpetanud, ei saadeta Sinu tulemusi õpetajale.\nNB! Sisestades e-posti aadressi, avanab võimalus Õpimärgi saamiseks. Jäta antud väli tühjaks kui sa seda ei soovi.',
+        confirmEndChallenge: 'Klikatas nupul "Lõpeta", loetakse Teadmistekontroll lõppenuks. Kui sa ei ole kõiki ülesandeid eelnevalt lõpetanud, ei saadeta Sinu tulemusi õpetajale.\nNB! Sisestades e-posti aadressi, avanab võimalus Õpimärgi saamiseks. Jäta antud väli tühjaks kui sa seda ei soovi.',
+        confirmEndChallengeCanGetScore: 'Klikatas nupul "Lõpeta", loetakse Teadmistekontroll lõppenuks. Kui sa ei ole kõiki ülesandeid eelnevalt lõpetanud, proovitakse salvestada Sinu hetkel kehtivat tulemust.\nNB! Sisestades e-posti aadressi, avanab võimalus Õpimärgi saamiseks. Jäta antud väli tühjaks kui sa seda ei soovi.',
         challengeBadgeImageTitle: 'Lae alla Õpimärgi pilt, mille sees paikneb ka saavutuse kinnitus.',
         challengeBadgeAssertionUrl: 'Vajuta Õpimärgi pilti et laadida see alla, pildi sees paikneb ka saavutuse kinnitus. Või vajuta siia et avada iseseisev kinnitus uues aknas.',
         errorCouldNotJoinTheChallenge: 'Midagi läks valesti! Ei saanud väljakutsega liituda.',
