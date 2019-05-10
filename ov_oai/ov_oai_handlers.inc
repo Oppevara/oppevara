@@ -212,9 +212,9 @@ class ov_oai_h5p_file_size extends views_handler_field {
 
         $size = "<value>";
 
-        $slug = db_query("SELECT slug FROM h5p_nodes WHERE nid = :nid", array(':nid' => $values->nid))->fetchField(0);
+        $h5p_node_info = db_query("SELECT content_id, slug FROM h5p_nodes WHERE nid = :nid", array(':nid' => $values->nid))->fetchObject();
         
-        $file = DRUPAL_ROOT . '/' . _h5p_get_h5p_path() . '/exports/' . ($slug ? $slug . '-' : '') . $values->nid . '.h5p';
+        $file = DRUPAL_ROOT . '/' . _h5p_get_h5p_path() . '/exports/' . ($h5p_node_info->slug ? $h5p_node_info->slug . '-' : '') . $h5p_node_info->content_id . '.h5p';
 
         if (file_exists($file)){
             $size .= ceil(filesize($file) / (1000*1000));
