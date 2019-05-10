@@ -217,7 +217,7 @@ class ov_oai_h5p_file_size extends views_handler_field {
         $file = DRUPAL_ROOT . '/' . _h5p_get_h5p_path() . '/exports/' . ($h5p_node_info->slug ? $h5p_node_info->slug . '-' : '') . $h5p_node_info->content_id . '.h5p';
 
         if (file_exists($file)){
-            $size .= ceil(filesize($file) / (1000*1000));
+            $size .= ceil(filesize($file) / (1024*1024));
         }
 
         $size .= "</value><unit>MB</unit>";
