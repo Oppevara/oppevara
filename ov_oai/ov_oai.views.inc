@@ -38,6 +38,14 @@ function ov_oai_views_data() {
     ),
   );
 
+    $data['node']['h5p_file_size'] = array(
+        'title' => t('H5P File Size'),
+        'help' => t('Outputs the size of the connected .h5p package'),
+        'field' => array(
+            'handler' => 'ov_oai_h5p_file_size',
+        ),
+    );
+
   $data['node']['xml_title'] = array(
     'title' => t('Title with language XML'),
     'help' => t('Generates XML element with language as attribute'),

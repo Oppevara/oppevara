@@ -201,6 +201,39 @@ class ov_oai_h5p_embed_code extends views_handler_field {
 }
 
 /**
+ * Handler for H5P Embed code generation
+ */
+class ov_oai_h5p_file_size extends views_handler_field {
+
+    /**
+     * Overrides views_handler_field::render().
+     */
+    function render($values) {
+
+        $size = "<value>";
+
+        $slug = db_query("SELECT slug FROM h5p_nodes WHERE nid = :nid", array(':nid' => $values->nid))->fetchField(0);
+        
+        $file = DRUPAL_ROOT . '/' . _h5p_get_h5p_path() . '/exports/' . ($slug ? $slug . '-' : '') . $values->nid . '.h5p';
+
+        if (file_exists($file)){
+            $size .= ceil(filesize($file) / (1000*1000));
+        }
+
+        $size .= "</value><unit>MB</unit>";
+
+        return $size;
+    }
+
+    /**
+     * Overrides views_handler_field::query().
+     */
+    function query() {
+        // do nothing -- to override the parent query.
+    }
+}
+
+/**
  * Handler for XML title field
  */
 class ov_oai_xml_title extends views_handler_field {
