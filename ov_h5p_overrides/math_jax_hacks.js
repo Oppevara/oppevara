@@ -38,7 +38,7 @@ addEventListener("load", function() {
 			n_css += augment_rule(rules[i], min_reset_rules, ".h5p-course-presentation .h5p-advanced-text") + "\n";
 			n_css += augment_rule(rules[i], min_reset_rules, ".h5p-dragquestion .h5p-advanced-text") + "\n";
 		}
-		
+
 		//	add new style
 		var el = document.createElement("style");
 		el.innerHTML = n_css;
@@ -92,7 +92,13 @@ addEventListener("load", function() {
                 add_all_triggers(); // Add all triggers again to new slide
             } else if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1){
                 add_math_jax_triggers(".h5p-question-try-again"); // Retry button in MultiChoice
-            }
+            } else if (event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/attempted" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.SingleChoiceSet") != -1) {
+							  // Attempts to fix dialg case of InteractiveVideo
+								setTimeout(function() {
+									mjx_reload();
+								}, 100);
+							  add_math_jax_triggers(".h5p-interactive-video .h5p-interaction-button");
+						}
 		}
     });
 
