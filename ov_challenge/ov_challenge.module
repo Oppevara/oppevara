@@ -294,7 +294,7 @@ function ov_challenge_h5p_scripts_alter(&$scripts, $libraries, $mode) {
   ];
   $scripts[] = (object) [
     'path' => drupal_get_path('module', 'ov_challenge') . '/js/ov_challenge.js',
-    'version' => '',
+    'version' => '?v=1.0.0',
   ];
 }
 
@@ -304,7 +304,7 @@ function ov_challenge_h5p_scripts_alter(&$scripts, $libraries, $mode) {
 function ov_challenge_h5p_styles_alter(&$styles, $libraries, $mode) {
   $styles[] = (object) [
     'path' => drupal_get_path('module', 'ov_challenge') . '/css/ov_challenge.css',
-    'version' => '',
+    'version' => '?v=1.0.0',
   ];
 }
 

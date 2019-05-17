@@ -23,7 +23,7 @@ function ov_april_fools_h5p_scripts_alter(&$scripts, $libraries, $mode) {
         if($mode == "iframe" || $mode = "external"){
             $scripts[] = (object) array(
                 'path' => drupal_get_path('module', 'ov_april_fools') . '/ov-april-fools.js',
-                'version' => ''
+                'version' => '?v=1.0.0'
             );
         }
     }
