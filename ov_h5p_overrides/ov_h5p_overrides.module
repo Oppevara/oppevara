@@ -93,20 +93,20 @@ function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
 
     $scripts[] = (object) array(
       'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/math_jax_hacks.js',
-      'version' => ''
+      'version' => '?v=1.0.0'
     );
 
     if(isset($libraries['H5P.Blanks']) && $libraries['H5P.Blanks']['majorVersion'] == "1" && $libraries['H5P.Blanks']['minorVersion'] == "10"){
       $scripts[] = (object) array(
         'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-blanks-xapi-override.js',
-        'version' => ''
+        'version' => '?v=1.0.0'
       );
     }
 
     if(isset($libraries['H5P.ImageHotspots']) && $libraries['H5P.ImageHotspots']['majorVersion'] == "1" && $libraries['H5P.ImageHotspots']['minorVersion'] <= "7"){
       $scripts[] = (object) array(
           'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-image-hotspots-override.js',
-          'version' => ''
+          'version' => '?v=1.0.0'
       );
     }
   }
@@ -114,12 +114,12 @@ function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
   if($mode == "iframe" || $mode = "external"){
       $scripts[] = (object) array(
           'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-base-target-override.js',
-          'version' => ''
+          'version' => '?v=1.0.0'
       );
 
       $scripts[] = (object) array(
           'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-image-max-height-override.js',
-          'version' => ''
+          'version' => '?v=1.0.0'
       );
 
   }
