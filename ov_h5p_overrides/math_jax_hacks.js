@@ -80,6 +80,7 @@ addEventListener("load", function() {
         add_math_jax_triggers(".joubel-tip-container"); // Hint inside text input
         add_math_jax_triggers(".h5p-element-button"); // Buttons that open extra h5p elements (like Text or a complete Fill-in-blanks) in Course presentation
         add_math_jax_triggers(".h5p-interaction-button"); // Buttons that open extra h5p elements in interactive video
+        add_drag_jax_triggers(".ui-draggable");
 	}
 	add_all_triggers();
 
@@ -89,9 +90,14 @@ addEventListener("load", function() {
     	if(event.data.statement.verb.id && event.data.statement.context.contextActivities.category) {
             if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/progressed" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.CoursePresentation") != -1){
                 mjx_reload();
-                add_all_triggers(); // Add all triggers again to new slide
-            } else if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1){
-                add_math_jax_triggers(".h5p-question-try-again"); // Retry button in MultiChoice
+            	setTimeout(function () {
+                    mjx_reload();
+                    add_all_triggers(); // Add all triggers again to new slide
+                }, 100);
+            } else if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && (event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1 || event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.DragText") != -1)){
+            	setTimeout(function () {
+                    add_math_jax_triggers(".h5p-question-buttons > .h5p-joubelui-button"); // Retry button in MultiChoice
+                }, 100);
             }
 		}
     });
@@ -103,11 +109,7 @@ addEventListener("load", function() {
         var els = document.querySelectorAll(selector);
         for (var i = 0; i < els.length; i++) {
             els[i].removeEventListener("mouseup", mjx_reload);
-            els[i].addEventListener("mouseup", function(){
-                setTimeout(function(){
-                    mjx_reload();
-                },100)
-            });
+            els[i].addEventListener("mouseup", mjx_reload);
         }
     }
     add_drag_jax_triggers(".ui-draggable");
