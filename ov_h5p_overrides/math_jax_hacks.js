@@ -132,7 +132,6 @@ addEventListener("load", function() {
             if (extractedMath){
                 if(!els[i].hasAttribute('data-math')){
                 	var newMath = String(extractedMath).replace(/\$/g, '$$$$'); // $$$$ is equal to $$ because $ is a special character in replace function!
-                	console.log(newMath);
                     els[i].setAttribute("data-math", newMath);
                 }
 
