@@ -28,6 +28,18 @@ addEventListener("load", function() {
 		MathJax.Hub.Typeset();
 	}
 
+    function mjx_reload_draggable(e) {
+		if(e.currentTarget.hasAttribute('data-math')){
+            var uuid = e.currentTarget.getAttribute('data-droppable-math-id');
+
+			setTimeout(function () {
+				var el = document.querySelector('[data-droppable-math-id="' + uuid + '"]');
+                el.innerHTML = el.getAttribute('data-math');
+                mjx_reload();
+            },50);
+        }
+    }
+
 	function mjx_hacks(mjx_style) {
 		//	::: mjx style force on course presentation :::
 		var min_reset_rules = { "line-height" : "0" };
@@ -90,21 +102,20 @@ addEventListener("load", function() {
     	if(event.data.statement.verb.id && event.data.statement.context.contextActivities.category) {
             if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/progressed" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.CoursePresentation") != -1){
                 mjx_reload();
-	            	setTimeout(function () {
-                    mjx_reload();
-                    add_all_triggers(); // Add all triggers again to new slide
-                }, 100);
+				setTimeout(function () {
+					mjx_reload();
+					add_all_triggers(); // Add all triggers again to new slide
+				}, 100);
             } else if(event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/answered" && (event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.MultiChoice") != -1 || event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.DragText") != -1)){
             	setTimeout(function () {
                     add_math_jax_triggers(".h5p-question-buttons > .h5p-joubelui-button"); // Retry button in MultiChoice
                 }, 100);
             } else if (event.data.statement.verb.id === "http://adlnet.gov/expapi/verbs/attempted" && event.data.statement.context.contextActivities.category[0].id.indexOf("H5P.SingleChoiceSet") != -1) {
-							  // Attempts to fix dialg case of InteractiveVideo
-								setTimeout(function() {
-									mjx_reload();
-								}, 100);
-							  add_math_jax_triggers(".h5p-interactive-video .h5p-interaction-button");
-						}		}
+            	// Attempts to fix dialg case of InteractiveVideo
+                setTimeout(mjx_reload, 100);
+				add_math_jax_triggers(".h5p-interactive-video .h5p-interaction-button");
+            }
+    	}
     });
 
 
@@ -113,8 +124,21 @@ addEventListener("load", function() {
     function add_drag_jax_triggers(selector) {
         var els = document.querySelectorAll(selector);
         for (var i = 0; i < els.length; i++) {
-            els[i].removeEventListener("mouseup", mjx_reload);
-            els[i].addEventListener("mouseup", mjx_reload);
+            els[i].removeEventListener("mouseup", mjx_reload_draggable);
+            els[i].addEventListener("mouseup", mjx_reload_draggable);
+
+            var label = els[i].getAttribute('aria-label');
+            var extractedMath = label.match(/\$[^\$]*\$/);
+            if (extractedMath){
+                if(!els[i].hasAttribute('data-math')){
+                    els[i].setAttribute("data-math", '$' + extractedMath + '$');
+                }
+
+                if(!els[i].hasAttribute('data-droppable-math-id')){
+                    els[i].setAttribute("data-droppable-math-id", H5P.createUUID());
+                }
+            }
+
         }
     }
     add_drag_jax_triggers(".ui-draggable");

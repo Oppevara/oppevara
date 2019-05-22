@@ -34,3 +34,11 @@ span.mjx-chtml.MJXc-display {
 .h5p-memory-game .h5p-row-break {
     clear: none;
 }
+
+.h5p-drag-text [aria-dropeffect] {
+    height: unset;
+    min-height: 1.25em;
+    line-height: 1.25em;
+    padding-bottom: 0;
+    margin: 0.1em;
+}
