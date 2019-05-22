@@ -136,10 +136,8 @@ addEventListener("load", function() {
         if(!el.hasAttribute('data-math-content')){
         	//console.log("sup");
             var content = el.innerHTML;
-            console.log(content);
             var extractedMath = content.match(/\$.+\$/);
             if (extractedMath){
-            	console.log(extractedMath);
                 el.setAttribute("data-math-content", content);
 
                 if(!el.hasAttribute('data-droppable-math-id')){
