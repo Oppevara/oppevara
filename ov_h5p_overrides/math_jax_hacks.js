@@ -25,17 +25,18 @@ addEventListener("load", function() {
 
 
 	function mjx_reload() {
+        add_drag_jax_triggers(".ui-draggable");
 		MathJax.Hub.Typeset();
 	}
 
-    function mjx_reload_draggable(e) {
-		if(e.currentTarget.hasAttribute('data-math')){
+    function mjx_reload_ondrop(e) {
+		if(e.currentTarget.hasAttribute('data-math-content')){
             var uuid = e.currentTarget.getAttribute('data-droppable-math-id');
 
 			setTimeout(function () {
 				var el = document.querySelector('[data-droppable-math-id="' + uuid + '"]');
 				if(/[.]{3}$/g.test(el.innerHTML)){
-                    el.innerHTML = el.getAttribute('data-math');
+                    el.innerHTML = el.getAttribute('data-math-content');
 				}
                 mjx_reload();
             },100);
@@ -126,25 +127,33 @@ addEventListener("load", function() {
     function add_drag_jax_triggers(selector) {
         var els = document.querySelectorAll(selector);
         for (var i = 0; i < els.length; i++) {
-            els[i].removeEventListener("mouseup", mjx_reload_draggable);
-            els[i].addEventListener("mouseup", mjx_reload_draggable);
+            setup_draggable_object(els[i]);
+        }
 
-            var label = els[i].getAttribute('aria-label');
-            var extractedMath = label.match(/\$.+\$/);
+    }
+
+    function setup_draggable_object(el) {
+        if(!el.hasAttribute('data-math-content')){
+        	//console.log("sup");
+            var content = el.innerHTML;
+            console.log(content);
+            var extractedMath = content.match(/\$.+\$/);
             if (extractedMath){
-                if(!els[i].hasAttribute('data-math')){
-                	var newMath = String(extractedMath).replace(/\$/g, '$$$$'); // $$$$ is equal to $$ because $ is a special character in replace function!
-                    els[i].setAttribute("data-math", newMath);
+            	console.log(extractedMath);
+                el.setAttribute("data-math-content", content);
+
+                if(!el.hasAttribute('data-droppable-math-id')){
+                    el.setAttribute("data-droppable-math-id", H5P.createUUID());
                 }
 
-                if(!els[i].hasAttribute('data-droppable-math-id')){
-                    els[i].setAttribute("data-droppable-math-id", H5P.createUUID());
-                }
+                el.removeEventListener("mouseup", mjx_reload_ondrop);
+                el.addEventListener("mouseup", mjx_reload_ondrop);
             }
-
         }
     }
-    add_drag_jax_triggers(".ui-draggable");
+
+    // Mathjax delays all math rendering until this method is called
+    MathJax.Hub.Configured();
 
 
 });
