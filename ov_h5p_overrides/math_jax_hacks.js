@@ -29,12 +29,12 @@ addEventListener("load", function() {
 	}
 
     function mjx_reload_draggable(e) {
-		if(e.currentTarget.hasAttribute('data-math')){
+		if(e.currentTarget.hasAttribute('data-math-content')){
             var uuid = e.currentTarget.getAttribute('data-droppable-math-id');
 
 			setTimeout(function () {
 				var el = document.querySelector('[data-droppable-math-id="' + uuid + '"]');
-                el.innerHTML = el.getAttribute('data-math');
+                el.innerHTML = el.getAttribute('data-math-content');
                 mjx_reload();
             },50);
         }
@@ -127,11 +127,11 @@ addEventListener("load", function() {
             els[i].removeEventListener("mouseup", mjx_reload_draggable);
             els[i].addEventListener("mouseup", mjx_reload_draggable);
 
-            var label = els[i].getAttribute('aria-label');
-            var extractedMath = label.match(/\$[^\$]*\$/);
+            var content = els[i].innerHTML;
+            var extractedMath = content.match(/\$[^\$]*\$/);
             if (extractedMath){
-                if(!els[i].hasAttribute('data-math')){
-                    els[i].setAttribute("data-math", '$' + extractedMath + '$');
+                if(!els[i].hasAttribute('data-math-content')){
+                    els[i].setAttribute("data-math-content", els[i].innerHTML);
                 }
 
                 if(!els[i].hasAttribute('data-droppable-math-id')){
