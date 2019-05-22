@@ -34,7 +34,9 @@ addEventListener("load", function() {
 
 			setTimeout(function () {
 				var el = document.querySelector('[data-droppable-math-id="' + uuid + '"]');
-                el.innerHTML = el.getAttribute('data-math');
+				if(/[.]{3}$/g.test(el.innerHTML)){
+                    el.innerHTML = el.getAttribute('data-math');
+				}
                 mjx_reload();
             },100);
         }
