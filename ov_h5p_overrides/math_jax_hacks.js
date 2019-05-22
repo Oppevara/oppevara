@@ -29,12 +29,12 @@ addEventListener("load", function() {
 	}
 
     function mjx_reload_draggable(e) {
-		if(e.currentTarget.hasAttribute('data-math-content')){
+		if(e.currentTarget.hasAttribute('data-math')){
             var uuid = e.currentTarget.getAttribute('data-droppable-math-id');
 
 			setTimeout(function () {
 				var el = document.querySelector('[data-droppable-math-id="' + uuid + '"]');
-                el.innerHTML = el.getAttribute('data-math-content');
+                el.innerHTML = el.getAttribute('data-math');
                 mjx_reload();
             },100);
         }
@@ -127,11 +127,13 @@ addEventListener("load", function() {
             els[i].removeEventListener("mouseup", mjx_reload_draggable);
             els[i].addEventListener("mouseup", mjx_reload_draggable);
 
-            var content = els[i].innerHTML;
-            var extractedMath = content.match(/\$[^\$]*\$/);
+            var label = els[i].getAttribute('aria-label');
+            var extractedMath = label.match(/\$.+\$/);
             if (extractedMath){
-                if(!els[i].hasAttribute('data-math-content')){
-                    els[i].setAttribute("data-math-content", els[i].innerHTML);
+                if(!els[i].hasAttribute('data-math')){
+                	var newMath = String(extractedMath).replace(/\$/g, '$$$$'); // $$$$ is equal to $$ because $ is a special character in replace function!
+                	console.log(newMath);
+                    els[i].setAttribute("data-math", newMath);
                 }
 
                 if(!els[i].hasAttribute('data-droppable-math-id')){
