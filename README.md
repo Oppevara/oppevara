@@ -25,10 +25,10 @@ All code should follow the [coding standards](https://www.drupal.org/docs/develo
 
 #### Configuration
 1. Create the role for Expert.
-2. Make sure that the **h5p_content** and **user** have taxonomy based fields, these should be based on the same hierarchy.
+1. Make sure that the **h5p_content** and **user** have taxonomy based fields, these should be based on the same hierarchy.
     * Make sure that the field on **h5p_content** is configured to be single-valued.
     * The one for **user** will only be available to people with administrating rights, once properly configured.
-3. Go to the settings page, select suitable role and fields and save that configuration.
+1. Go to the settings page, select suitable role and fields and save that configuration.
 
 #### Applied logic
 System will then try to check if any of the terms within the user profile would match with the one (or any of its parents) selected within the entity. In case of successful match, user will be granted an **update** permission to certain entities.
@@ -45,12 +45,22 @@ System will then try to check if any of the terms within the user profile would 
             Header set Content-Disposition attachment
         </FilesMatch>
         ```
-    
-2. As of Drupal 7.50, Drupal core now protects against clickjacking by default by emitting the 'X-Frame-Options: SAMEORIGIN' header. This prevents the site from being embedded in an iframe on another domain. [Documentation](https://www.drupal.org/node/2735873)
-   
+
+1. As of Drupal 7.50, Drupal core now protects against clickjacking by default by emitting the 'X-Frame-Options: SAMEORIGIN' header. This prevents the site from being embedded in an iframe on another domain. [Documentation](https://www.drupal.org/node/2735873)
+
    To override the default behaviour, easiest is to set the 'x_frame_option' variable in settings.php:
     ```
       // Turn off the X-Frame-Options header entirely, to restore the previous
       // behavior of allowing the site to be embedded in a frame on another site.
       $conf['x_frame_options'] = '';
     ```
+
+1. Fix tooltips in fullscreen mode for embedded content as described in [this](https://github.com/Oppevara/oppevara/issues/139) issue.
+  - Fix should be added into the h5p.js file before [this](https://github.com/h5p/h5p-php-library/blob/master/js/h5p.js#L649) line.
+  ```
+  // CUSTOM START
+  if ($element.hasClass('h5p-container') && $element.hasClass('h5p-standalone') && $element.hasClass('h5p-course-presentation') && $element.parent().hasClass('h5p-content')) {
+    $element = $element.parent();
+  }
+  // CUSTOM END
+  ```
