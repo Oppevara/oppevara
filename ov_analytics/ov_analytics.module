@@ -180,10 +180,27 @@ function _ov_analytics_process_statements_cron() {
 }
 
 /**
+ * Sets "data" for already processed statements and batches that could not be
+ * sent to an empty string. This will free up some space that is being populated
+ * by a no longer needed data. Any data for rows entered more than two weeks ago
+ * will be removed.
+ * @return void
+ */
+function _ov_analytics_remove_data_from_processed_statements() {
+  db_update('ov_analytics_statements')
+    ->fields([
+      'data' => '',
+    ])
+    ->condition('created', time() - (2 * 7 * 24 * 60 * 60), '<')
+    ->execute();
+}
+
+/**
  * Implements hook_cron().
  */
 function ov_analytics_cron() {
   _ov_analytics_process_statements_cron();
+  _ov_analytics_remove_data_from_processed_statements();
 }
 
 /**
