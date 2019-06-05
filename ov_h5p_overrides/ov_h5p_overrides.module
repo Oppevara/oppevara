@@ -109,6 +109,14 @@ function ov_h5p_overrides_h5p_scripts_alter(&$scripts, $libraries, $mode) {
           'version' => '?v=1.0.0'
       );
     }
+
+    // TODO It might make sense to also check the minor version
+    if (isset($libraries['H5P.CoursePresentation']) && $libraries['H5P.CoursePresentation']['majorVersion'] == "1") {
+      $scripts[] = (object) array(
+          'path' => drupal_get_path('module', 'ov_h5p_overrides') . '/h5p-course-presentation-override.js',
+          'version' => '?v=1.0.0'
+      );
+    }
   }
 
   if($mode == "iframe" || $mode = "external"){
