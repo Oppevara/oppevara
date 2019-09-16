@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file
+ * Drupal Oppevara Google Tag Manager module.
+ */
+
+/**
+ * Implements hook_h5p_scripts_alter().
+ */
+function ov_google_tag_h5p_scripts_alter(&$scripts, $libraries, $mode) {
+  if ($mode === 'external' && google_tag_insert_snippet()) {
+    $cache_buster = variable_get('css_js_query_string', '');
+
+    // The logic for the current code is copy-pasted from here: https://git.drupalcode.org/project/google_tag/blob/7.x-1.x/google_tag.module#L159
+    $base_path = 'public:/';
+    $include_classes = variable_get('google_tag_include_classes', 0);
+
+    list($realm_name, $realm_key) = google_tag_realm_values();
+    $realm_name .= $realm_name ? '/' : '';
+    $realm_key .= $realm_key ? '.' : '';
+    $types = $include_classes ? array('data_layer', 'script') : array('script');
+
+    $data_layer = variable_get('google_tag_data_layer', 'dataLayer');
+    if ($include_classes && module_exists('datalayer') && $data_layer == 'dataLayer') {
+      $classes = variable_get('google_tag_data_layer_classes', array());
+      if ($classes) {
+        // Add data_layer using dataLayer module.
+        datalayer_add($classes);
+      }
+      $types = array('script');
+    }
+
+    foreach ($types as $type) {
+      $path = "$base_path/google_tag/{$realm_name}google_tag.$realm_key$type.js";
+      $scripts[] = (object) [
+        'path' => file_create_url($path),
+        'version' => '?v=' . $cache_buster,
+      ];
+    }
+  }
+}
+
+/**
+ * Implements hook_h5p_additional_embed_html_alter().
+ */
+function ov_google_tag_h5p_additional_embed_html_alter(&$html) {
+  if (google_tag_insert_snippet()) {
+    // The logic for the current code is copy-pasted from here: https://git.drupalcode.org/project/google_tag/blob/7.x-1.x/google_tag.module#L159
+    $base_path = 'public:/';
+    $include_classes = variable_get('google_tag_include_classes', 0);
+
+    list($realm_name, $realm_key) = google_tag_realm_values();
+    $realm_name .= $realm_name ? '/' : '';
+    $realm_key .= $realm_key ? '.' : '';
+
+    $type = 'noscript';
+    $url = "$base_path/google_tag/{$realm_name}google_tag.$realm_key$type.js";
+    $noscript = @file_get_contents($url);
+
+    $html[] = $noscript;
+  }
+}
