@@ -1,0 +1,35 @@
+<?php
+
+/**
+ * Implements hook_html_head_alter().
+ */
+function ov_node_overrides_html_head_alter(&$head_elements) {
+  $path = current_path();
+
+  if (preg_match('/^node\/[0-9]+/', $path)) {
+    foreach ($head_elements as $key => $element) {
+      if (isset($element['#attributes']['rel']) && $element['#attributes']['rel'] == 'canonical') {
+        $url = $head_elements[$key]['#attributes']['href'];
+
+        if (base_path() && strpos($url, base_path()) === 0) {
+          $url = substr($url, strlen(base_path()));
+        }
+
+        $url = url($url, [
+          'absolute' => TRUE,
+        ]);
+
+        $mapping = db_select('ov_node_canonical_mappings', 'm')
+          ->fields('m', ['external_url'])
+          ->condition('node_url', $url)
+          ->execute()
+          ->fetchField();
+
+        if ($mapping) {
+          $head_elements[$key]['#attached']['drupal_add_http_header'][0][1] = str_replace($head_elements[$key]['#attributes']['href'], $mapping, $head_elements[$key]['#attached']['drupal_add_http_header'][0][1]);
+          $head_elements[$key]['#attributes']['href'] = $mapping;
+        }
+      }
+    }
+  }
+}

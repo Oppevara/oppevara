@@ -1,0 +1,81 @@
+<?php
+
+/**
+* @file
+* Drupal Oppevara Node Overrides install.
+*/
+
+/**
+ * Implements hook_schema().
+ */
+function ov_node_overrides_schema() {
+  $schema['ov_node_canonical_mappings'] = [
+    'description' => 'Stores information for canonical URL overrides for Node',
+    'fields' => [
+      'id' => [
+        'description' => 'Primary Key: The unique identifier for this mapping',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'external_id' => [
+        'description' => 'The unique identiier in E-koolikott',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'node_url' => [
+        'description' => 'URL of a Node',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+      'external_url' => [
+        'description' => 'URL in E-koolikott',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ],
+    ],
+    'primary key' => ['id'],
+    'unique keys' => [
+      'external_id' => ['external_id'],
+      'node_url' => ['node_url'],
+      'external_url' => ['external_url'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_install().
+ */
+function ov_node_overrides_install() {
+  $handle = fopen(__DIR__ . '/csv/mappings.csv', 'r');
+
+  if ($handle === FALSE) {
+    watchdog('ov_node_overrides', 'Could not read a file containing mappings data.', [], WATCHDOG_ERROR);
+  }
+
+  $mappings = [];
+
+  while(($data = fgetcsv($handle)) !== FALSE) {
+    $mappings[] = [
+      'external_id' => $data[0],
+      'node_url' => $data[1],
+      'external_url' => $data[2],
+    ];
+  }
+
+  fclose($handle);
+
+  $query = db_insert('ov_node_canonical_mappings')
+    ->fields(['external_id', 'node_url', 'external_url']);
+
+  foreach ($mappings as $mapping) {
+    $query->values($mapping);
+  }
+
+  $query->execute();
+}
