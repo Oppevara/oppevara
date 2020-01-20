@@ -60,11 +60,11 @@ function ov_node_overrides_install() {
 
   $mappings = [];
 
-  while(($data = fgetcsv($handle)) !== FALSE) {
+  while(($data = fgetcsv($handle, 0, ';')) !== FALSE) {
     $mappings[] = [
       'external_id' => $data[0],
       'node_url' => $data[1],
-      'external_url' => $data[2],
+      'external_url' => ($data[3] === '#N/A') ? $data[2] : $data[3],
     ];
   }
 
