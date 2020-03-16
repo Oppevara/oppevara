@@ -12,7 +12,7 @@
    if ( $mode === 'external' ) {
      $scripts[] = (object) [
        'path' => drupal_get_path('module', 'oppevara') . '/js/donors-data.js',
-       'version' => '?v=1.0.0',
+       'version' => '?v=1.0.1',
      ];
    }
  }

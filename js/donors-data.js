@@ -61,7 +61,7 @@
         H5P.jQuery('<div/>', {
           class: 'ov-creative-commons',
           style: 'text-align:center;font-family: Sans-Serif;font-size:12px;',
-          html: '<a rel="license" href="http://creativecommons.org/licenses/by/3.0/ee/" target="_blank"><img alt="Creative Commonsi litsents" style="border-width:0" src="https://i.creativecommons.org/l/by/3.0/ee/80x15.png" /></a><br />See teos on antud Creative Commonsi litsentsi "<a rel="license" href="http://creativecommons.org/licenses/by/3.0/ee/" target="_blank">Autorile viitamine 3.0 Eesti</a>" alla.'
+          html: '<a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/ee/" target="_blank"><img alt="Creative Commonsi litsents" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/ee/80x15.png" /></a><br />See teos on antud Creative Commonsi litsentsi "<a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/ee/" target="_blank">Autorile viitamine 3.0 + Jagamine samadel tingimustel Eesti</a>" alla.'
         }).insertAfter($actions);
         setTimeout(function() {
           H5P.trigger(instance, 'resize');

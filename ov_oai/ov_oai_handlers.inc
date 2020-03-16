@@ -213,7 +213,7 @@ class ov_oai_h5p_file_size extends views_handler_field {
         $size = "<value>";
 
         $h5p_node_info = db_query("SELECT content_id, slug FROM h5p_nodes WHERE nid = :nid", array(':nid' => $values->nid))->fetchObject();
-        
+
         $file = DRUPAL_ROOT . '/' . _h5p_get_h5p_path() . '/exports/' . ($h5p_node_info->slug ? $h5p_node_info->slug . '-' : '') . $h5p_node_info->content_id . '.h5p';
 
         if (file_exists($file)){
@@ -272,7 +272,7 @@ class ov_oai_xml_license extends views_handler_field {
    */
   function render($values) {
 
-    $xml = '<string language="x-t-cc-url">http://creativecommons.org/licenses/by/3.0/</string>';
+    $xml = '<string language="x-t-cc-url">https://creativecommons.org/licenses/by-sa/3.0/</string>';
 
     // Sanitize and return.
     return $xml;
