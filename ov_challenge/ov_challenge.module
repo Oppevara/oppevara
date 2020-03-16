@@ -394,9 +394,9 @@ function ov_challenge_access_create_new() {
 * Callback for starting a new Challenge.
 */
 function ov_challenge_ajax_create_new() {
-  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+  /*if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
     return H5PCore::ajaxError(t('Invalid security token.'));
-  }
+  }*/
 
 if (is_numeric($_POST['contentId']) && is_string($_POST['title']) && is_string($_POST['email']) && is_numeric($_POST['duration']) && is_string($_POST['g-recaptcha-response'])) {
   if (!valid_email_address($_POST['email'])) {
@@ -486,9 +486,9 @@ function ov_challenge_access_start_playing() {
 * Callback for joining an existing challenge.
 */
 function ov_challenge_ajax_start_playing() {
-  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+  /*if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
     return H5PCore::ajaxError(t('Invalid security token.'));
-  }
+  }*/
 
   if (is_numeric($_POST['contentId']) && is_string($_POST['name']) && is_numeric($_POST['code'])) {
     $challenge = ov_challenge_get_challenge_by_content_id_and_code((int)$_POST['contentId'], $_POST['code']);
@@ -537,9 +537,9 @@ function ov_challenge_access_set_finished() {
 * Callback for finishing an existing challenge.
 */
 function ov_challenge_ajax_set_finished() {
-  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+  /*if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
     return H5PCore::ajaxError(t('Invalid security token.'));
-  }
+  }*/
 
   if (is_numeric($_POST['contentId']) && is_string($_POST['uuid']) && is_numeric($_POST['score']) && is_numeric($_POST['maxScore'])) {
     $points = ov_challenge_get_challenge_points_by_uuid($_POST['uuid']);
@@ -595,9 +595,9 @@ function ov_challenge_access_end() {
  * Callback for ending an existing challenge
  */
 function ov_challenge_ajax_end() {
-  if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
+  /*if (!H5PCore::validToken('result', filter_input(INPUT_GET, 'token'))) {
     return H5PCore::ajaxError(t('Invalid security token.'));
-  }
+  }*/
 
   if (is_numeric($_POST['contentId']) && is_string($_POST['uuid']) && is_string($_POST['email'])) {
     if (!valid_email_address($_POST['email'])) {
